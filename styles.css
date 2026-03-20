@@ -1,0 +1,195 @@
+:root {
+  --bg: #08111f;
+  --panel: rgba(15, 23, 42, 0.94);
+  --panel-2: #162033;
+  --text: #e5ecf6;
+  --muted: #9fb0c6;
+  --border: #2e415d;
+  --green: #1f7a45;
+  --amber: #9a5a08;
+  --red: #8d2430;
+  --blue: #1f5ec8;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.24);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #020817 0%, #0c1729 100%);
+}
+.app-shell {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.eyebrow {
+  margin: 0 0 6px;
+  color: #8fb4ff;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.topbar h1 { margin: 0 0 6px; font-size: 2.1rem; }
+.subtitle { margin: 0; color: var(--muted); }
+.controls-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.intro-card {
+  display: grid;
+  grid-template-columns: 160px 190px minmax(240px, 1fr) 160px;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+.wide-input { min-width: 0; }
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 90px;
+  justify-content: center;
+}
+.stat-label { color: var(--muted); font-size: 0.9rem; }
+.stat-value { font-size: 1.7rem; font-weight: 700; }
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.legend-item { color: var(--muted); }
+label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+input, select, button {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 12px 14px;
+  font-size: 0.96rem;
+}
+button {
+  cursor: pointer;
+  width: auto;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+button:hover { filter: brightness(1.06); transform: translateY(-1px); }
+button.primary {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+}
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 960px;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 11px 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+th {
+  background: #0a1324;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+td:first-child, th:first-child {
+  text-align: left;
+  min-width: 220px;
+}
+.cell-exact { background: rgba(31, 122, 69, 0.88); }
+.cell-partial { background: rgba(154, 90, 8, 0.88); }
+.cell-wrong { background: rgba(141, 36, 48, 0.86); }
+.cell-higher, .cell-lower {
+  background: rgba(31, 94, 200, 0.82);
+  font-weight: 600;
+}
+.swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.exact { background: var(--green); }
+.partial { background: var(--amber); }
+.wrong { background: var(--red); }
+.higher, .lower { background: var(--blue); }
+.hint-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+.hint-list li { margin-bottom: 8px; }
+.answer-meta {
+  color: var(--muted);
+  line-height: 1.6;
+}
+.result-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+}
+.hidden { display: none; }
+dialog {
+  max-width: 700px;
+  width: calc(100% - 32px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 20px;
+}
+dialog::backdrop { background: rgba(0,0,0,0.7); }
+@media (max-width: 1100px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .side-column { order: -1; }
+}
+@media (max-width: 920px) {
+  .intro-card { grid-template-columns: 1fr; }
+  .status-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+  .topbar { flex-direction: column; }
+}
+@media (max-width: 540px) {
+  .app-shell { padding: 14px; }
+  .status-grid { grid-template-columns: 1fr 1fr; }
+  .topbar h1 { font-size: 1.75rem; }
+}
