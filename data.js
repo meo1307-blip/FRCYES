@@ -1,1967 +1,372 @@
-const CONDITIONS = [
-  {
-    "name": "Developmental dysplasia of the hip",
-    "subspecialty": "Paediatric",
-    "region": "Hip",
-    "pathology": "Developmental",
-    "age": "Infant",
-    "acuity": "Chronic",
-    "investigation": "Ultrasound",
-    "management": "Harness",
-    "hints": [
-      "Ortolani/Barlow and acetabular development are relevant.",
-      "Think Pavlik harness then reduction/osteotomy if late."
-    ]
-  },
-  {
-    "name": "Slipped capital femoral epiphysis",
-    "subspecialty": "Paediatric",
-    "region": "Hip",
-    "pathology": "Developmental",
-    "age": "Adolescent",
-    "acuity": "Subacute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Obese adolescent with externally rotated gait.",
-      "Southwick slip angle and in-situ screw fixation are key."
-    ]
-  },
-  {
-    "name": "Perthes disease",
-    "subspecialty": "Paediatric",
-    "region": "Hip",
-    "pathology": "Avascular",
-    "age": "Child",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Containment",
-    "hints": [
-      "Limping child with reduced abduction and internal rotation.",
-      "Think femoral head collapse and containment strategy."
-    ]
-  },
-  {
-    "name": "Septic arthritis of the hip in a child",
-    "subspecialty": "Paediatric",
-    "region": "Hip",
-    "pathology": "Infection",
-    "age": "Child",
-    "acuity": "Acute",
-    "investigation": "Ultrasound",
-    "management": "Washout",
-    "hints": [
-      "Febrile child refusing to weight bear.",
-      "Kocher criteria and urgent drainage matter."
-    ]
-  },
-  {
-    "name": "Transient synovitis of the hip",
-    "subspecialty": "Paediatric",
-    "region": "Hip",
-    "pathology": "Inflammatory",
-    "age": "Child",
-    "acuity": "Acute",
-    "investigation": "Ultrasound",
-    "management": "Observation",
-    "hints": [
-      "Post-viral limp and generally systemically well.",
-      "Differentiate from septic arthritis."
-    ]
-  },
-  {
-    "name": "Supracondylar humeral fracture",
-    "subspecialty": "Paediatric",
-    "region": "Elbow",
-    "pathology": "Trauma",
-    "age": "Child",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Check anterior humeral line and neurovascular status.",
-      "Closed reduction with percutaneous pinning is classic."
-    ]
-  },
-  {
-    "name": "Lateral condyle fracture of the humerus",
-    "subspecialty": "Paediatric",
-    "region": "Elbow",
-    "pathology": "Trauma",
-    "age": "Child",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Beware displacement and non-union risk.",
-      "Internal oblique views are useful."
-    ]
-  },
-  {
-    "name": "Pulled elbow",
-    "subspecialty": "Paediatric",
-    "region": "Elbow",
-    "pathology": "Instability",
-    "age": "Child",
-    "acuity": "Acute",
-    "investigation": "Clinical",
-    "management": "Reduction",
-    "hints": [
-      "Toddler after traction injury with pronated forearm.",
-      "Usually reduced without imaging if classic."
-    ]
-  },
-  {
-    "name": "Monteggia fracture-dislocation in a child",
-    "subspecialty": "Paediatric",
-    "region": "Forearm",
-    "pathology": "Trauma",
-    "age": "Child",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Always inspect the radiocapitellar line.",
-      "Ulna reduction restores radial head alignment."
-    ]
-  },
-  {
-    "name": "Toddler's fracture",
-    "subspecialty": "Paediatric",
-    "region": "Tibia",
-    "pathology": "Trauma",
-    "age": "Child",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Casting",
-    "hints": [
-      "Subtle spiral tibial fracture with limp/refusal to bear weight.",
-      "Initial radiographs can be normal."
-    ]
-  },
-  {
-    "name": "Blount disease",
-    "subspecialty": "Paediatric",
-    "region": "Knee",
-    "pathology": "Deformity",
-    "age": "Child",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Osteotomy",
-    "hints": [
-      "Progressive varus centred at proximal tibia.",
-      "Differentiate from physiological bowing."
-    ]
-  },
-  {
-    "name": "Osgood-Schlatter disease",
-    "subspecialty": "Paediatric",
-    "region": "Knee",
-    "pathology": "Overuse",
-    "age": "Adolescent",
-    "acuity": "Chronic",
-    "investigation": "Clinical",
-    "management": "Physiotherapy",
-    "hints": [
-      "Tibial tubercle pain in active adolescent.",
-      "Usually self-limiting traction apophysitis."
-    ]
-  },
-  {
-    "name": "Adolescent idiopathic scoliosis",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Deformity",
-    "age": "Adolescent",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Fusion",
-    "hints": [
-      "Think Cobb angle and skeletal maturity.",
-      "Bracing versus fusion depends on curve and growth remaining."
-    ]
-  },
-  {
-    "name": "Congenital talipes equinovarus",
-    "subspecialty": "Paediatric",
-    "region": "Foot and ankle",
-    "pathology": "Deformity",
-    "age": "Infant",
-    "acuity": "Chronic",
-    "investigation": "Clinical",
-    "management": "Casting",
-    "hints": [
-      "CAVE deformity pattern is classic.",
-      "Ponseti casting with Achilles tenotomy is standard."
-    ]
-  },
-  {
-    "name": "Tarsal coalition",
-    "subspecialty": "Paediatric",
-    "region": "Foot and ankle",
-    "pathology": "Developmental",
-    "age": "Adolescent",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Reconstruction",
-    "hints": [
-      "Rigid painful flatfoot in adolescent.",
-      "Calcaneonavicular or talocalcaneal coalition are typical."
-    ]
-  },
-  {
-    "name": "Cauda equina syndrome",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Neurological",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "MRI",
-    "management": "Decompression",
-    "hints": [
-      "Saddle anaesthesia and bladder symptoms are red flags.",
-      "Urgent MRI and decompression are time-critical."
-    ]
-  },
-  {
-    "name": "Cervical spondylotic myelopathy",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Decompression",
-    "hints": [
-      "Hand clumsiness, gait disturbance, upper motor neuron signs.",
-      "Cord signal change and canal stenosis influence management."
-    ]
-  },
-  {
-    "name": "Metastatic spinal cord compression",
-    "subspecialty": "Tumour",
-    "region": "Spine",
-    "pathology": "Tumour",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "MRI",
-    "management": "Oncological",
-    "hints": [
-      "Back pain with neurology in a patient with malignancy.",
-      "Steroids, MRI, oncology discussion and possible decompression/stabilisation."
-    ]
-  },
-  {
-    "name": "Lumbar disc prolapse with radiculopathy",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Degenerative",
-    "age": "Adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Decompression",
-    "hints": [
-      "Sciatica with root tension signs.",
-      "Most settle, but progressive deficit pushes intervention."
-    ]
-  },
-  {
-    "name": "Lumbar spinal stenosis",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Decompression",
-    "hints": [
-      "Neurogenic claudication relieved by flexion.",
-      "Differentiate from vascular claudication."
-    ]
-  },
-  {
-    "name": "Pyogenic spondylodiscitis",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Infection",
-    "age": "Older adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Antibiotics",
-    "hints": [
-      "Severe back pain with inflammatory markers and possible sepsis.",
-      "Image-guided biopsy and prolonged antibiotics are common."
-    ]
-  },
-  {
-    "name": "Ankylosing spondylitis kyphotic deformity",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Inflammatory",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Fusion",
-    "hints": [
-      "Sagittal imbalance and rigid inflammatory spine.",
-      "Fracture risk after minor trauma is high."
-    ]
-  },
-  {
-    "name": "Odontoid fracture in an older adult",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Trauma",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fusion",
-    "hints": [
-      "Upper cervical injury after low-energy fall.",
-      "Type II odontoid fractures are exam favourites."
-    ]
-  },
-  {
-    "name": "Thoracolumbar burst fracture",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Assess canal compromise and posterior ligamentous complex.",
-      "Neurology and stability drive operative decisions."
-    ]
-  },
-  {
-    "name": "Scheuermann kyphosis",
-    "subspecialty": "Spine",
-    "region": "Spine",
-    "pathology": "Deformity",
-    "age": "Adolescent",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Physiotherapy",
-    "hints": [
-      "Structural kyphosis with wedged vertebrae.",
-      "Severe rigid deformity can need fusion."
-    ]
-  },
-  {
-    "name": "Rotator cuff tear arthropathy",
-    "subspecialty": "Shoulder",
-    "region": "Shoulder",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Arthroplasty",
-    "hints": [
-      "Pseudoparalysis with superior humeral migration.",
-      "Reverse shoulder arthroplasty often provides function."
-    ]
-  },
-  {
-    "name": "Anterior shoulder instability",
-    "subspecialty": "Shoulder",
-    "region": "Shoulder",
-    "pathology": "Instability",
-    "age": "Young adult",
-    "acuity": "Recurrent",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Young patient with repeated dislocation episodes.",
-      "Think Bankart, Hill-Sachs and glenoid bone loss."
-    ]
-  },
-  {
-    "name": "Acromioclavicular joint dislocation",
-    "subspecialty": "Shoulder",
-    "region": "Shoulder",
-    "pathology": "Trauma",
-    "age": "Young adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Reconstruction",
-    "hints": [
-      "Superior shoulder pain after direct blow.",
-      "Rockwood classification guides management."
-    ]
-  },
-  {
-    "name": "Proximal humeral fracture-dislocation",
-    "subspecialty": "Shoulder",
-    "region": "Shoulder",
-    "pathology": "Trauma",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Arthroplasty",
-    "hints": [
-      "Evaluate tuberosities, head-split pattern and viability.",
-      "Fixation versus arthroplasty depends on fracture pattern and patient."
-    ]
-  },
-  {
-    "name": "Pancoast tumour with brachial plexus involvement",
-    "subspecialty": "Tumour",
-    "region": "Shoulder",
-    "pathology": "Tumour",
-    "age": "Older adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Oncological",
-    "hints": [
-      "Shoulder pain with hand weakness and Horner syndrome.",
-      "A non-orthopaedic mimic but important viva differential."
-    ]
-  },
-  {
-    "name": "Distal biceps rupture",
-    "subspecialty": "Elbow",
-    "region": "Elbow",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "MRI",
-    "management": "Repair",
-    "hints": [
-      "Sudden pain with loss of supination power.",
-      "Hook test and urgent repair in high-demand patients."
-    ]
-  },
-  {
-    "name": "Terrible triad injury of the elbow",
-    "subspecialty": "Elbow",
-    "region": "Elbow",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Dislocation with radial head and coronoid injury.",
-      "Restore stability with radial head/coronoid/LCL strategy."
-    ]
-  },
-  {
-    "name": "Cubital tunnel syndrome",
-    "subspecialty": "Hand",
-    "region": "Elbow",
-    "pathology": "Neurological",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "Neurophysiology",
-    "management": "Decompression",
-    "hints": [
-      "Ulnar paraesthesia and intrinsic weakness.",
-      "Differentiate from C8/T1 and Guyon canal."
-    ]
-  },
-  {
-    "name": "Lateral epicondylitis",
-    "subspecialty": "Elbow",
-    "region": "Elbow",
-    "pathology": "Overuse",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "Clinical",
-    "management": "Physiotherapy",
-    "hints": [
-      "Tender common extensor origin with gripping pain.",
-      "Usually non-operative first-line."
-    ]
-  },
-  {
-    "name": "Olecranon bursitis",
-    "subspecialty": "Elbow",
-    "region": "Elbow",
-    "pathology": "Inflammatory",
-    "age": "Adult",
-    "acuity": "Subacute",
-    "investigation": "Clinical",
-    "management": "Observation",
-    "hints": [
-      "Posterior elbow swelling, consider sepsis and gout.",
-      "Aspiration is selective because of fistula/infection risk."
-    ]
-  },
-  {
-    "name": "Dupuytren disease",
-    "subspecialty": "Hand",
-    "region": "Hand",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "Clinical",
-    "management": "Release",
-    "hints": [
-      "Palmar cords and MCP/PIP contractures.",
-      "Table-top test and procedure threshold are common viva points."
-    ]
-  },
-  {
-    "name": "Scaphoid non-union",
-    "subspecialty": "Hand",
-    "region": "Wrist",
-    "pathology": "Non-union",
-    "age": "Young adult",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Persistent radial-sided wrist pain after missed fracture.",
-      "CT for union pattern and graft planning."
-    ]
-  },
-  {
-    "name": "Kienbock disease",
-    "subspecialty": "Hand",
-    "region": "Wrist",
-    "pathology": "Avascular",
-    "age": "Young adult",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Lunate osteonecrosis with dorsal wrist pain.",
-      "Ulnar variance matters."
-    ]
-  },
-  {
-    "name": "Flexor tendon zone II injury",
-    "subspecialty": "Hand",
-    "region": "Hand",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "Clinical",
-    "management": "Repair",
-    "hints": [
-      "No-man's-land tendon injury.",
-      "Repair quality and early hand therapy are critical."
-    ]
-  },
-  {
-    "name": "Mallet finger",
-    "subspecialty": "Hand",
-    "region": "Hand",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "Clinical",
-    "management": "Splintage",
-    "hints": [
-      "Extensor lag at DIP after forced flexion.",
-      "Continuous DIP splintage is the standard."
-    ]
-  },
-  {
-    "name": "Jersey finger",
-    "subspecialty": "Hand",
-    "region": "Hand",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "MRI",
-    "management": "Repair",
-    "hints": [
-      "FDP avulsion after grabbing an opponent's shirt.",
-      "Classically ring finger and inability to flex DIP."
-    ]
-  },
-  {
-    "name": "Scapholunate ligament injury",
-    "subspecialty": "Hand",
-    "region": "Wrist",
-    "pathology": "Instability",
-    "age": "Adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Dorsal wrist pain and widened scapholunate gap.",
-      "DISI pattern is a frequent exam point."
-    ]
-  },
-  {
-    "name": "Carpal tunnel syndrome",
-    "subspecialty": "Hand",
-    "region": "Wrist",
-    "pathology": "Neurological",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "Neurophysiology",
-    "management": "Decompression",
-    "hints": [
-      "Median paraesthesia worse at night.",
-      "Thenar weakness and red flags matter."
-    ]
-  },
-  {
-    "name": "Swan-neck deformity in rheumatoid hand",
-    "subspecialty": "Hand",
-    "region": "Hand",
-    "pathology": "Inflammatory",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "Clinical",
-    "management": "Reconstruction",
-    "hints": [
-      "Systemic inflammatory disease with tendon imbalance.",
-      "Look at overall hand pattern, not just one digit."
-    ]
-  },
-  {
-    "name": "Boutonniere deformity",
-    "subspecialty": "Hand",
-    "region": "Hand",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Subacute",
-    "investigation": "Clinical",
-    "management": "Splintage",
-    "hints": [
-      "Central slip injury with PIP flexion and DIP hyperextension.",
-      "Elson test is useful."
-    ]
-  },
-  {
-    "name": "Pelvic ring injury",
-    "subspecialty": "Trauma",
-    "region": "Pelvis",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Think haemodynamic status and pelvic binder first.",
-      "Young-Burgess/Tile principles guide stability thinking."
-    ]
-  },
-  {
-    "name": "Acetabular fracture",
-    "subspecialty": "Trauma",
-    "region": "Pelvis",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Assess columns, roof arc and hip congruity.",
-      "Associated dislocation changes urgency."
-    ]
-  },
-  {
-    "name": "Neck of femur fracture",
-    "subspecialty": "Trauma",
-    "region": "Hip",
-    "pathology": "Trauma",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Arthroplasty",
-    "hints": [
-      "Displaced intracapsular fracture in frail patient is a classic viva.",
-      "Garden classification and arthroplasty criteria matter."
-    ]
-  },
-  {
-    "name": "Intertrochanteric femoral fracture",
-    "subspecialty": "Trauma",
-    "region": "Hip",
-    "pathology": "Trauma",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Extracapsular proximal femur fracture.",
-      "Sliding hip screw versus nail depends on stability."
-    ]
-  },
-  {
-    "name": "Subtrochanteric femoral fracture",
-    "subspecialty": "Trauma",
-    "region": "Femur",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "High mechanical stress region with deforming forces.",
-      "Reduction strategy is key."
-    ]
-  },
-  {
-    "name": "Periprosthetic femoral fracture around a total hip replacement",
-    "subspecialty": "Trauma",
-    "region": "Hip",
-    "pathology": "Periprosthetic",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Revision",
-    "hints": [
-      "Vancouver classification is the main exam framework.",
-      "Stem stability determines fixation versus revision."
-    ]
-  },
-  {
-    "name": "Distal femoral fracture",
-    "subspecialty": "Trauma",
-    "region": "Knee",
-    "pathology": "Trauma",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Consider intra-articular extension and implant status.",
-      "Nail, plate, or DFR in selected cases."
-    ]
-  },
-  {
-    "name": "Tibial plateau fracture",
-    "subspecialty": "Trauma",
-    "region": "Knee",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Look at depression, split pattern and soft tissues.",
-      "Staged management may be safer."
-    ]
-  },
-  {
-    "name": "Patellar fracture",
-    "subspecialty": "Trauma",
-    "region": "Knee",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Assess extensor mechanism continuity.",
-      "Displacement and step-off influence surgery."
-    ]
-  },
-  {
-    "name": "Quadriceps tendon rupture",
-    "subspecialty": "Trauma",
-    "region": "Knee",
-    "pathology": "Trauma",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "Ultrasound",
-    "management": "Repair",
-    "hints": [
-      "Extensor lag above the patella.",
-      "Often associated with systemic disease."
-    ]
-  },
-  {
-    "name": "Patellar tendon rupture",
-    "subspecialty": "Trauma",
-    "region": "Knee",
-    "pathology": "Trauma",
-    "age": "Young adult",
-    "acuity": "Acute",
-    "investigation": "Ultrasound",
-    "management": "Repair",
-    "hints": [
-      "High-riding patella after explosive contraction.",
-      "Check for inferior pole avulsion."
-    ]
-  },
-  {
-    "name": "ACL rupture",
-    "subspecialty": "Sports knee",
-    "region": "Knee",
-    "pathology": "Instability",
-    "age": "Young adult",
-    "acuity": "Acute",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Pivoting injury with haemarthrosis.",
-      "Think associated meniscal and osteochondral injury."
-    ]
-  },
-  {
-    "name": "Multiligament knee injury",
-    "subspecialty": "Sports knee",
-    "region": "Knee",
-    "pathology": "Instability",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Always check vascular status and common peroneal nerve.",
-      "KD classification and staged reconstruction may come up."
-    ]
-  },
-  {
-    "name": "Posterolateral corner injury of the knee",
-    "subspecialty": "Sports knee",
-    "region": "Knee",
-    "pathology": "Instability",
-    "age": "Adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Varus thrust and dial test are useful clues.",
-      "Often missed if focus is only on cruciates."
-    ]
-  },
-  {
-    "name": "Native knee septic arthritis",
-    "subspecialty": "Knee",
-    "region": "Knee",
-    "pathology": "Infection",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "Aspiration",
-    "management": "Washout",
-    "hints": [
-      "Hot swollen knee with raised inflammatory markers.",
-      "Aspiration before antibiotics where feasible."
-    ]
-  },
-  {
-    "name": "Dislocated native hip",
-    "subspecialty": "Trauma",
-    "region": "Hip",
-    "pathology": "Instability",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Reduction",
-    "hints": [
-      "Posterior dislocation after dashboard injury is classic.",
-      "Urgent reduction reduces AVN risk."
-    ]
-  },
-  {
-    "name": "Open tibial fracture",
-    "subspecialty": "Trauma",
-    "region": "Tibia",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "BOAST principles, antibiotics, debridement and soft tissue cover.",
-      "Think temporary external fixation if needed."
-    ]
-  },
-  {
-    "name": "Pilon fracture",
-    "subspecialty": "Trauma",
-    "region": "Ankle",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Axial load distal tibial plafond injury.",
-      "Soft tissues often dictate staged treatment."
-    ]
-  },
-  {
-    "name": "Ankle fracture-dislocation",
-    "subspecialty": "Trauma",
-    "region": "Ankle",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Urgent reduction before definitive fixation.",
-      "Syndesmosis assessment is key."
-    ]
-  },
-  {
-    "name": "Achilles tendon rupture",
-    "subspecialty": "Foot and ankle",
-    "region": "Foot and ankle",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "Ultrasound",
-    "management": "Rehabilitation",
-    "hints": [
-      "Sudden calf pain and positive Simmonds test.",
-      "Functional rehab versus surgery debate is examinable."
-    ]
-  },
-  {
-    "name": "Lisfranc injury",
-    "subspecialty": "Foot and ankle",
-    "region": "Midfoot",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Plantar bruising and midfoot instability are clues.",
-      "Weight-bearing radiographs help if subtle."
-    ]
-  },
-  {
-    "name": "Calcaneal fracture",
-    "subspecialty": "Trauma",
-    "region": "Foot and ankle",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Axial load injury with heel swelling.",
-      "Bohler angle and soft tissue timing matter."
-    ]
-  },
-  {
-    "name": "Aseptic loosening of a total hip replacement",
-    "subspecialty": "Arthroplasty",
-    "region": "Hip",
-    "pathology": "Implant failure",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Revision",
-    "hints": [
-      "Painful THR with radiolucent lines or migration.",
-      "Exclude infection before revision planning."
-    ]
-  },
-  {
-    "name": "Prosthetic joint infection of the hip",
-    "subspecialty": "Arthroplasty",
-    "region": "Hip",
-    "pathology": "Infection",
-    "age": "Older adult",
-    "acuity": "Subacute",
-    "investigation": "Aspiration",
-    "management": "Revision",
-    "hints": [
-      "Use a structured work-up with inflammatory markers and aspiration.",
-      "DAIR versus staged revision depends on timing and host factors."
-    ]
-  },
-  {
-    "name": "Femoroacetabular impingement",
-    "subspecialty": "Young adult hip",
-    "region": "Hip",
-    "pathology": "Impingement",
-    "age": "Young adult",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Arthroscopy",
-    "hints": [
-      "Cam/pincer morphology with groin pain in flexion.",
-      "Labral pathology often coexists."
-    ]
-  },
-  {
-    "name": "Osteonecrosis of the femoral head",
-    "subspecialty": "Young adult hip",
-    "region": "Hip",
-    "pathology": "Avascular",
-    "age": "Adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Arthroplasty",
-    "hints": [
-      "Risk factors include steroids and alcohol.",
-      "Pre-collapse disease may be considered for head-preserving options."
-    ]
-  },
-  {
-    "name": "Hip dysplasia with secondary osteoarthritis",
-    "subspecialty": "Young adult hip",
-    "region": "Hip",
-    "pathology": "Developmental",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Arthroplasty",
-    "hints": [
-      "Young adult with shallow acetabulum and lateral uncovering.",
-      "Periacetabular osteotomy versus arthroplasty depends on stage."
-    ]
-  },
-  {
-    "name": "Abductor deficiency after total hip replacement",
-    "subspecialty": "Arthroplasty",
-    "region": "Hip",
-    "pathology": "Implant failure",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Trendelenburg gait after hip arthroplasty.",
-      "Assess component position, tendon integrity and nerve status."
-    ]
-  },
-  {
-    "name": "Aseptic loosening of a total knee replacement",
-    "subspecialty": "Arthroplasty",
-    "region": "Knee",
-    "pathology": "Implant failure",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Revision",
-    "hints": [
-      "Painful TKR with progressive radiolucency or subsidence.",
-      "Rule out infection first."
-    ]
-  },
-  {
-    "name": "Periprosthetic joint infection of the knee",
-    "subspecialty": "Arthroplasty",
-    "region": "Knee",
-    "pathology": "Infection",
-    "age": "Older adult",
-    "acuity": "Subacute",
-    "investigation": "Aspiration",
-    "management": "Revision",
-    "hints": [
-      "A painful hot TKR is infection until proven otherwise.",
-      "Alpha-defensin, cultures and staged revision may be discussed."
-    ]
-  },
-  {
-    "name": "Instability after total knee replacement",
-    "subspecialty": "Arthroplasty",
-    "region": "Knee",
-    "pathology": "Instability",
-    "age": "Older adult",
-    "acuity": "Recurrent",
-    "investigation": "X-ray",
-    "management": "Revision",
-    "hints": [
-      "Flexion versus extension instability patterns matter.",
-      "Component sizing and joint line are frequent viva issues."
-    ]
-  },
-  {
-    "name": "Periprosthetic fracture around a total knee replacement",
-    "subspecialty": "Arthroplasty",
-    "region": "Knee",
-    "pathology": "Periprosthetic",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Consider implant stability and remaining distal bone stock.",
-      "Fixation versus distal femoral replacement may be needed."
-    ]
-  },
-  {
-    "name": "Rotator cuff failure after shoulder arthroplasty",
-    "subspecialty": "Arthroplasty",
-    "region": "Shoulder",
-    "pathology": "Implant failure",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Revision",
-    "hints": [
-      "Painful anatomic shoulder arthroplasty losing function.",
-      "Conversion to reverse may be required."
-    ]
-  },
-  {
-    "name": "Glenoid loosening after anatomic total shoulder replacement",
-    "subspecialty": "Arthroplasty",
-    "region": "Shoulder",
-    "pathology": "Implant failure",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Revision",
-    "hints": [
-      "Pain and radiolucency around glenoid component.",
-      "Bone loss planning is important."
-    ]
-  },
-  {
-    "name": "Osteosarcoma of the distal femur",
-    "subspecialty": "Tumour",
-    "region": "Knee",
-    "pathology": "Tumour",
-    "age": "Adolescent",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Oncological",
-    "hints": [
-      "Painful metaphyseal lesion around the knee in a teenager.",
-      "Biopsy must be planned with the sarcoma unit."
-    ]
-  },
-  {
-    "name": "Ewing sarcoma of the pelvis",
-    "subspecialty": "Tumour",
-    "region": "Pelvis",
-    "pathology": "Tumour",
-    "age": "Child",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Oncological",
-    "hints": [
-      "Systemic symptoms and small round blue cell tumour.",
-      "Neoadjuvant chemotherapy and MDT planning are central."
-    ]
-  },
-  {
-    "name": "Giant cell tumour of the distal radius",
-    "subspecialty": "Tumour",
-    "region": "Wrist",
-    "pathology": "Tumour",
-    "age": "Young adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Epiphyseal lesion in skeletally mature patient.",
-      "Curettage adjuvants versus resection depend on grade/location."
-    ]
-  },
-  {
-    "name": "Enchondroma of the hand",
-    "subspecialty": "Tumour",
-    "region": "Hand",
-    "pathology": "Tumour",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Observation",
-    "hints": [
-      "Common benign cartilaginous lesion in phalanges/metacarpals.",
-      "Differentiate from low-grade chondrosarcoma where relevant."
-    ]
-  },
-  {
-    "name": "Metastatic lesion of the proximal femur",
-    "subspecialty": "Tumour",
-    "region": "Femur",
-    "pathology": "Tumour",
-    "age": "Older adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Fixation",
-    "hints": [
-      "Impending/pathological fracture with Mirels scoring.",
-      "Aim for durable fixation or reconstruction."
-    ]
-  },
-  {
-    "name": "Solitary bone cyst of the proximal humerus",
-    "subspecialty": "Tumour",
-    "region": "Shoulder",
-    "pathology": "Tumour",
-    "age": "Child",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Observation",
-    "hints": [
-      "Benign cystic lesion often found after fracture.",
-      "May settle with growth; intervention selective."
-    ]
-  },
-  {
-    "name": "Chronic osteomyelitis of the tibia",
-    "subspecialty": "Infection",
-    "region": "Tibia",
-    "pathology": "Infection",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Antibiotics",
-    "hints": [
-      "Sinus, sequestrum and involucrum are classic concepts.",
-      "Debridement plus dead-space management are key."
-    ]
-  },
-  {
-    "name": "Diabetic foot osteomyelitis",
-    "subspecialty": "Infection",
-    "region": "Foot and ankle",
-    "pathology": "Infection",
-    "age": "Older adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Antibiotics",
-    "hints": [
-      "Neuropathy, ulcer, sepsis control and revascularisation thinking.",
-      "Surgery depends on tissue viability and host factors."
-    ]
-  },
-  {
-    "name": "Necrotising fasciitis of the limb",
-    "subspecialty": "Infection",
-    "region": "Tibia",
-    "pathology": "Infection",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "Clinical",
-    "management": "Debridement",
-    "hints": [
-      "Pain out of proportion and rapid systemic toxicity.",
-      "Immediate aggressive debridement saves life."
-    ]
-  },
-  {
-    "name": "Septic non-union of the tibia",
-    "subspecialty": "Infection",
-    "region": "Tibia",
-    "pathology": "Infection",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Infected fracture with instability and bone loss.",
-      "Think staged debridement, stability and biology."
-    ]
-  },
-  {
-    "name": "Hallux valgus",
-    "subspecialty": "Foot and ankle",
-    "region": "Forefoot",
-    "pathology": "Deformity",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Osteotomy",
-    "hints": [
-      "Painful bunion with first ray deformity.",
-      "Angles and TMT instability guide procedure choice."
-    ]
-  },
-  {
-    "name": "Hallux rigidus",
-    "subspecialty": "Foot and ankle",
-    "region": "Forefoot",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Fusion",
-    "hints": [
-      "Stiff painful first MTP joint with dorsal osteophytes.",
-      "Cheilectomy versus fusion depends on stage."
-    ]
-  },
-  {
-    "name": "Adult acquired flatfoot from tibialis posterior dysfunction",
-    "subspecialty": "Foot and ankle",
-    "region": "Foot and ankle",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Progressive planovalgus deformity with medial pain.",
-      "Flexible versus rigid stage changes management."
-    ]
-  },
-  {
-    "name": "Charcot neuroarthropathy of the foot",
-    "subspecialty": "Foot and ankle",
-    "region": "Midfoot",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Subacute",
-    "investigation": "X-ray",
-    "management": "Offloading",
-    "hints": [
-      "Warm swollen neuropathic foot can mimic infection.",
-      "Immobilisation and offloading are central early."
-    ]
-  },
-  {
-    "name": "End-stage ankle arthritis",
-    "subspecialty": "Foot and ankle",
-    "region": "Ankle",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Fusion",
-    "hints": [
-      "Painful stiff ankle with functional limitation.",
-      "Fusion versus replacement is a common exam comparison."
-    ]
-  },
-  {
-    "name": "Osteochondral lesion of the talus",
-    "subspecialty": "Foot and ankle",
-    "region": "Ankle",
-    "pathology": "Trauma",
-    "age": "Young adult",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Arthroscopy",
-    "hints": [
-      "Persistent deep ankle pain after sprain.",
-      "Berndt-Harty style thinking and lesion size matter."
-    ]
-  },
-  {
-    "name": "Chronic lateral ankle instability",
-    "subspecialty": "Foot and ankle",
-    "region": "Ankle",
-    "pathology": "Instability",
-    "age": "Young adult",
-    "acuity": "Recurrent",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Repeated sprains and giving way.",
-      "Brostrom-style repair is classic."
-    ]
-  },
-  {
-    "name": "Morton neuroma",
-    "subspecialty": "Foot and ankle",
-    "region": "Forefoot",
-    "pathology": "Neurological",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "Ultrasound",
-    "management": "Excision",
-    "hints": [
-      "Interdigital burning pain, usually 3rd webspace.",
-      "Footwear modification and injections before surgery."
-    ]
-  },
-  {
-    "name": "Plantar fasciitis",
-    "subspecialty": "Foot and ankle",
-    "region": "Foot and ankle",
-    "pathology": "Overuse",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "Clinical",
-    "management": "Physiotherapy",
-    "hints": [
-      "First-step heel pain worst in the morning.",
-      "Usually conservative management."
-    ]
-  },
-  {
-    "name": "Fifth metatarsal Jones fracture",
-    "subspecialty": "Foot and ankle",
-    "region": "Forefoot",
-    "pathology": "Trauma",
-    "age": "Young adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Metadiaphyseal fifth metatarsal fracture with non-union risk.",
-      "Athletes often push fixation."
-    ]
-  },
-  {
-    "name": "Primary varus knee osteoarthritis",
-    "subspecialty": "Knee",
-    "region": "Knee",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Arthroplasty",
-    "hints": [
-      "Medial compartment wear and varus deformity.",
-      "HTO versus UKR versus TKR depends on age, pattern and demand."
-    ]
-  },
-  {
-    "name": "Osteochondritis dissecans of the knee",
-    "subspecialty": "Sports knee",
-    "region": "Knee",
-    "pathology": "Avascular",
-    "age": "Adolescent",
-    "acuity": "Subacute",
-    "investigation": "MRI",
-    "management": "Fixation",
-    "hints": [
-      "Juvenile lesion of the femoral condyle with mechanical symptoms.",
-      "Stability and physeal status guide treatment."
-    ]
-  },
-  {
-    "name": "Patellofemoral instability",
-    "subspecialty": "Sports knee",
-    "region": "Knee",
-    "pathology": "Instability",
-    "age": "Young adult",
-    "acuity": "Recurrent",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Recurrent dislocator with apprehension.",
-      "Think TT-TG, trochlear dysplasia and MPFL."
-    ]
-  },
-  {
-    "name": "Discoid lateral meniscus",
-    "subspecialty": "Sports knee",
-    "region": "Knee",
-    "pathology": "Developmental",
-    "age": "Child",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Arthroscopy",
-    "hints": [
-      "Snapping knee in a child or adolescent.",
-      "Saucerisation may be discussed."
-    ]
-  },
-  {
-    "name": "Degenerative meniscal tear",
-    "subspecialty": "Knee",
-    "region": "Knee",
-    "pathology": "Degenerative",
-    "age": "Older adult",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Physiotherapy",
-    "hints": [
-      "Middle-aged/older patient with joint line pain and OA overlap.",
-      "Routine arthroscopy is often not first-line."
-    ]
-  },
-  {
-    "name": "Distal radius fracture",
-    "subspecialty": "Trauma",
-    "region": "Wrist",
-    "pathology": "Trauma",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Assess shortening, dorsal tilt and intra-articular involvement.",
-      "Non-operative versus volar plate decisions are common."
-    ]
-  },
-  {
-    "name": "Essex-Lopresti injury",
-    "subspecialty": "Elbow",
-    "region": "Forearm",
-    "pathology": "Instability",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Reconstruction",
-    "hints": [
-      "Radial head fracture with DRUJ and interosseous membrane injury.",
-      "Do not miss forearm longitudinal instability."
-    ]
-  },
-  {
-    "name": "Radial head fracture",
-    "subspecialty": "Elbow",
-    "region": "Elbow",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "X-ray",
-    "management": "Fixation",
-    "hints": [
-      "Check for associated instability, coronoid and Essex-Lopresti pattern.",
-      "Mason classification is central."
-    ]
-  },
-  {
-    "name": "Proximal humeral fracture",
-    "subspecialty": "Trauma",
-    "region": "Shoulder",
-    "pathology": "Trauma",
-    "age": "Older adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Tuberosity displacement and fracture pattern matter.",
-      "Neer framework often used in exams."
-    ]
-  },
-  {
-    "name": "Clavicle non-union",
-    "subspecialty": "Shoulder",
-    "region": "Shoulder",
-    "pathology": "Non-union",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Fixation",
-    "hints": [
-      "Persistent pain and motion at a previous fracture site.",
-      "May need plating with graft."
-    ]
-  },
-  {
-    "name": "Scapular body fracture",
-    "subspecialty": "Trauma",
-    "region": "Shoulder",
-    "pathology": "Trauma",
-    "age": "Adult",
-    "acuity": "Acute",
-    "investigation": "CT",
-    "management": "Observation",
-    "hints": [
-      "Usually high-energy injury with chest trauma associations.",
-      "Most are treated non-operatively."
-    ]
-  },
-  {
-    "name": "Brachial plexus birth palsy with internal rotation contracture",
-    "subspecialty": "Paediatric",
-    "region": "Shoulder",
-    "pathology": "Neurological",
-    "age": "Child",
-    "acuity": "Chronic",
-    "investigation": "MRI",
-    "management": "Reconstruction",
-    "hints": [
-      "Secondary shoulder deformity after obstetric palsy.",
-      "Muscle balancing and osteotomy options can be discussed."
-    ]
-  },
-  {
-    "name": "Leg length discrepancy after childhood hip disease",
-    "subspecialty": "Deformity",
-    "region": "Hip",
-    "pathology": "Deformity",
-    "age": "Adolescent",
-    "acuity": "Chronic",
-    "investigation": "X-ray",
-    "management": "Lengthening",
-    "hints": [
-      "Block testing and long-leg radiographs are useful.",
-      "Consider growth remaining and method of correction."
-    ]
-  },
-  {
-    "name": "Varus malunion of the distal femur",
-    "subspecialty": "Deformity",
-    "region": "Femur",
-    "pathology": "Deformity",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Osteotomy",
-    "hints": [
-      "Mechanical axis planning is central.",
-      "Think correction planes and fixation method."
-    ]
-  },
-  {
-    "name": "Post-traumatic elbow stiffness",
-    "subspecialty": "Elbow",
-    "region": "Elbow",
-    "pathology": "Stiffness",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Release",
-    "hints": [
-      "Loss of functional arc after injury/surgery.",
-      "Heterotopic ossification and instability risk matter."
-    ]
-  },
-  {
-    "name": "Heterotopic ossification after acetabular surgery",
-    "subspecialty": "Trauma",
-    "region": "Hip",
-    "pathology": "Inflammatory",
-    "age": "Adult",
-    "acuity": "Chronic",
-    "investigation": "CT",
-    "management": "Excision",
-    "hints": [
-      "Painful restricted hip motion after major trauma/surgery.",
-      "Timing of excision and prophylaxis are common viva points."
+window.FRCYES_CASES = [
+  {
+    id: 1,
+    topic: "Tumour",
+    diagnosis: "Osteosarcoma",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "16-year-old boy with progressive distal thigh pain for 3 months, worse at night and now limiting sport.",
+      "Pain is deep and persistent. No preceding trauma. He reports recent swelling and a 3 kg weight loss.",
+      "Firm tender swelling around the distal femur. Knee movement slightly reduced. No erythema. Neurovascular status intact.",
+      "X-ray: aggressive metaphyseal lesion in distal femur with mixed lytic/sclerotic change, periosteal elevation and cloud-like ossification. MRI shows soft tissue extension.",
+      "You need to state the diagnosis, immediate next steps, and principles of management."
+    ],
+    idealDifferentials: [
+      { name: "Osteosarcoma", weight: "strong", why: "Age, metaphyseal location, night pain, aggressive radiographic appearance and soft tissue mass fit best." },
+      { name: "Ewing sarcoma", weight: "partial", why: "A malignant bone tumour differential in this age group, but the imaging pattern here is more in keeping with osteosarcoma." },
+      { name: "Chronic osteomyelitis", weight: "partial", why: "Can mimic malignancy but the radiographic aggressiveness and systemic pattern make it less likely." }
+    ],
+    management: {
+      immediate: ["Do not biopsy through an unplanned incision.", "Refer urgently to a specialist sarcoma MDT.", "Non-weight bearing and analgesia if fracture risk or severe pain."],
+      definitive: ["Staging with MRI of entire bone and CT chest.", "Image-guided or planned biopsy by tumour team.", "Neoadjuvant chemotherapy and limb salvage or appropriate resection depending on staging."],
+      complications: ["Pulmonary metastases", "Pathological fracture", "Local recurrence"]
+    },
+    compare: {
+      against: "Ewing sarcoma",
+      rows: [
+        ["Typical age", "Adolescents, often slightly older teens", "Children and adolescents"],
+        ["Typical site", "Metaphysis of long bones", "Diaphysis or metadiaphysis"],
+        ["Matrix", "Osteoid production", "No osteoid matrix"],
+        ["Periosteal reaction", "Sunburst / Codman triangle", "Onion-skin may be seen"]
+      ]
+    },
+    takeaways: [
+      "Suspected primary bone tumours should be imaged and biopsied only via a specialist sarcoma pathway.",
+      "Night pain, a mass, and aggressive periosteal reaction are red flags.",
+      "Never perform casual biopsy or fixation before tumour team input."
+    ]
+  },
+  {
+    id: 2,
+    topic: "Paediatrics",
+    diagnosis: "Slipped capital femoral epiphysis",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "13-year-old overweight boy presents with a limp and vague knee pain for 4 weeks.",
+      "No major trauma. Symptoms worse after activity. Parents mention the foot has started turning out.",
+      "Antalgic gait. Reduced internal rotation of the hip and obligatory external rotation on flexion.",
+      "AP pelvis and frog lateral radiographs show posterior and inferior displacement of the capital femoral epiphysis.",
+      "State the diagnosis, classify stability, and outline treatment."
+    ],
+    idealDifferentials: [
+      { name: "Slipped capital femoral epiphysis", weight: "strong", why: "Classic age, body habitus, knee pain referral, obligatory external rotation and radiographic slip." },
+      { name: "Perthes disease", weight: "partial", why: "Paediatric hip pathology with limp, but age and radiographs fit SCFE better." },
+      { name: "Transient synovitis", weight: "partial", why: "A limp differential, but chronicity and examination findings do not fit as well." }
+    ],
+    management: {
+      immediate: ["Make the patient non-weight bearing immediately.", "Assess whether the slip is stable or unstable.", "Urgent orthopaedic management to reduce AVN risk."],
+      definitive: ["In situ screw fixation for stable slips.", "Consider contralateral assessment and prophylactic fixation in selected patients.", "Endocrine workup if atypical age or bilateral presentation."],
+      complications: ["Avascular necrosis", "Chondrolysis", "Residual femoroacetabular impingement"]
+    },
+    compare: {
+      against: "Perthes disease",
+      rows: [
+        ["Typical age", "10 to 16 years", "4 to 8 years"],
+        ["Body habitus", "Often overweight", "Not classically linked"],
+        ["Rotation", "Loss of internal rotation; obligatory external rotation", "Reduced abduction/internal rotation"],
+        ["Radiographs", "Epiphyseal slip", "Femoral head fragmentation / collapse"]
+      ]
+    },
+    takeaways: [
+      "Never forget hip pathology can present as knee pain in children.",
+      "SCFE is an urgent condition because unstable slips carry major AVN risk.",
+      "Use AP pelvis and frog lateral unless instability makes lateral unsafe."
+    ]
+  },
+  {
+    id: 3,
+    topic: "Infection",
+    diagnosis: "Periprosthetic joint infection",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "72-year-old woman presents 18 months after total knee replacement with pain, swelling, and difficulty mobilising.",
+      "Symptoms have been worsening over 6 weeks. She reports intermittent fevers and a recent dental abscess."
+      ,"Warm swollen knee with moderate effusion. Healed scar. Range of motion painful and reduced.",
+      "Bloods: CRP 92, ESR elevated. X-rays show subtle radiolucent lines. Aspiration reveals cloudy fluid with raised synovial white cell count.",
+      "State the diagnosis and explain your management algorithm."
+    ],
+    idealDifferentials: [
+      { name: "Periprosthetic joint infection", weight: "strong", why: "Painful prosthetic joint with inflammation, raised markers and positive aspirate is classic." },
+      { name: "Aseptic loosening", weight: "partial", why: "Can cause pain and radiolucencies, but inflammatory markers and aspirate favour infection." },
+      { name: "Crystal arthropathy", weight: "partial", why: "Can mimic infection but prosthetic joint context and systemic clues make PJI more likely." }
+    ],
+    management: {
+      immediate: ["Do not start antibiotics before aspiration unless septic and unstable.", "Obtain cultures and optimise comorbidities.", "Discuss at revision arthroplasty / infection MDT."],
+      definitive: ["Acute early or acute haematogenous infection may be suitable for DAIR in selected cases.", "Chronic infection more often requires one-stage or two-stage revision depending on host, organism and soft tissues.", "Targeted antibiotics with microbiology input."],
+      complications: ["Persistent infection", "Implant failure", "Poor function or need for salvage procedure"]
+    },
+    compare: {
+      against: "Aseptic loosening",
+      rows: [
+        ["Inflammatory markers", "Often raised", "Usually normal"],
+        ["Joint aspiration", "Raised WCC / positive culture", "Negative culture"],
+        ["Symptoms", "Pain ± swelling, warmth, fevers", "Mechanical pain predominates"],
+        ["Management", "DAIR or revision strategy + antibiotics", "Revision for loosening if indicated"]
+      ]
+    },
+    takeaways: [
+      "Pain in a replaced joint is infection until convincingly excluded.",
+      "Aspirate before antibiotics whenever possible.",
+      "Management depends on chronicity, organism, host factors and implant stability."
+    ]
+  },
+  {
+    id: 4,
+    topic: "Trauma",
+    diagnosis: "Acute compartment syndrome",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "28-year-old man after tibial shaft fracture complains of escalating leg pain despite opioids.",
+      "Pain is severe, worsening, and disproportionate. It increases markedly when his toes are passively stretched.",
+      "Tense swollen compartments. Pain on passive stretch. Distal pulses present. Sensation beginning to reduce in the first web space.",
+      "No imaging or blood test will safely rule this out. Intracompartment pressure measurement is only an adjunct if the diagnosis is unclear.",
+      "State the diagnosis and immediate treatment."
+    ],
+    idealDifferentials: [
+      { name: "Acute compartment syndrome", weight: "strong", why: "Disproportionate pain and pain on passive stretch after tibial fracture are key discriminators." },
+      { name: "Deep vein thrombosis", weight: "partial", why: "May cause swelling and pain but not the classic compartment findings." },
+      { name: "Peripheral nerve injury", weight: "partial", why: "Can explain sensory symptoms but not the severe tense painful compartments." }
+    ],
+    management: {
+      immediate: ["Remove constrictive dressings and split casts.", "Keep limb at heart level, not elevated high.", "Urgent four-compartment fasciotomy if clinical suspicion is high."],
+      definitive: ["Reassess muscle viability and fracture management.", "Planned second look and delayed closure or skin grafting.", "Document neurology and perfusion carefully."],
+      complications: ["Muscle necrosis", "Volkmann-type contracture", "Renal injury from rhabdomyolysis"]
+    },
+    compare: {
+      against: "Deep vein thrombosis",
+      rows: [
+        ["Pain pattern", "Severe, escalating, disproportionate", "Aching or cramping"],
+        ["Passive stretch", "Marked pain", "Not typical"],
+        ["Compartments", "Tense and wooden", "Usually soft"],
+        ["Treatment urgency", "Immediate surgery", "Anticoagulation workup pathway"]
+      ]
+    },
+    takeaways: [
+      "Pulses do not exclude compartment syndrome.",
+      "Compartment syndrome is a clinical diagnosis; do not delay fasciotomy when suspicion is high.",
+      "Pain on passive stretch remains one of the most useful early signs."
+    ]
+  },
+  {
+    id: 5,
+    topic: "Adult Reconstruction",
+    diagnosis: "Aseptic loosening of total hip replacement",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "68-year-old man presents 12 years after total hip replacement with increasing groin and start-up pain.",
+      "No fever or wound issues. Pain is mechanical, worse on first rising and with walking.",
+      "Antalgic gait. Pain at extremes of movement. No erythema, sinus, or systemic upset.",
+      "X-rays show progressive radiolucent lines and migration around the acetabular component. CRP and ESR are normal.",
+      "State the diagnosis and revision considerations."
+    ],
+    idealDifferentials: [
+      { name: "Aseptic loosening of total hip replacement", weight: "strong", why: "Late mechanical pain with migration and normal infection markers fits aseptic loosening." },
+      { name: "Periprosthetic joint infection", weight: "partial", why: "Always worth excluding in a painful arthroplasty, but the picture is less inflammatory." },
+      { name: "Trochanteric pain syndrome", weight: "partial", why: "A pain source after THR, but radiographic migration points elsewhere." }
+    ],
+    management: {
+      immediate: ["Rule out infection before revision planning.", "Assess implant fixation, bone loss, and patient factors.", "Optimise host factors before major revision surgery."],
+      definitive: ["Revision arthroplasty with appropriate reconstruction strategy based on bone loss.", "Plan stems/cups/augments or graft depending on defect.", "Use templating and possible advanced imaging for bone stock assessment."],
+      complications: ["Further bone loss", "Periprosthetic fracture", "Dislocation after revision"]
+    },
+    compare: {
+      against: "Periprosthetic joint infection",
+      rows: [
+        ["Pain pattern", "Mechanical / start-up pain", "May be constant and inflammatory"],
+        ["Markers", "Usually normal", "Often raised"],
+        ["Sinus / warmth", "Absent", "May be present"],
+        ["Workup", "Loosening and bone loss assessment", "Culture-based infection workup"]
+      ]
+    },
+    takeaways: [
+      "A painful arthroplasty must always be assessed systematically: infection, loosening, instability, fracture, soft tissues.",
+      "Normal inflammatory markers help but do not absolutely exclude infection.",
+      "Revision planning hinges on bone loss classification and implant fixation."
+    ]
+  },
+  {
+    id: 6,
+    topic: "Shoulder",
+    diagnosis: "Anterior shoulder dislocation",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "22-year-old rugby player attends after a fall onto an abducted externally rotated arm.",
+      "Immediate severe shoulder pain and inability to continue playing.",
+      "Arm held slightly abducted and externally rotated. Loss of normal shoulder contour. Check axillary nerve sensation.",
+      "Radiographs confirm an anterior glenohumeral dislocation without associated fracture.",
+      "State the diagnosis and management including recurrence counselling."
+    ],
+    idealDifferentials: [
+      { name: "Anterior shoulder dislocation", weight: "strong", why: "Mechanism, posture and contour loss are classic." },
+      { name: "Greater tuberosity fracture", weight: "partial", why: "Can follow similar mechanism but clinical deformity/radiology point to dislocation." },
+      { name: "Acromioclavicular joint dislocation", weight: "partial", why: "Shoulder injury differential but typical contour and arm position differ." }
+    ],
+    management: {
+      immediate: ["Document neurovascular status before reduction.", "Provide analgesia or sedation as required and perform reduction.", "Post-reduction neurovascular reassessment and radiographs."],
+      definitive: ["Short period of sling then rehabilitation.", "Consider early stabilisation discussion in young contact athletes with high recurrence risk.", "Assess for associated Bankart / Hill-Sachs lesions if recurrent."],
+      complications: ["Recurrence", "Axillary nerve neuropraxia", "Associated labral or bony injury"]
+    },
+    compare: {
+      against: "Posterior shoulder dislocation",
+      rows: [
+        ["Mechanism", "Abduction/external rotation trauma", "Seizure, electric shock, axial load in adduction/internal rotation"],
+        ["Arm position", "Abducted and externally rotated", "Adducted and internally rotated"],
+        ["Radiograph clues", "Humeral head anteroinferior", "Lightbulb sign may be seen"],
+        ["Missed diagnosis", "Less commonly missed", "Often missed initially"]
+      ]
+    },
+    takeaways: [
+      "Always document axillary nerve sensation before and after reduction.",
+      "Young male contact athletes have high recurrence risk.",
+      "Post-reduction radiographs are mandatory."
+    ]
+  },
+  {
+    id: 7,
+    topic: "Foot and Ankle",
+    diagnosis: "Achilles tendon rupture",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "44-year-old recreational footballer felt a sudden kick to the back of the ankle while sprinting.",
+      "He stopped immediately and struggles to push off when walking.",
+      "Palpable gap 4 cm proximal to the calcaneal insertion. Positive Simmonds-Thompson test.",
+      "Ultrasound can confirm if uncertain, but the diagnosis is usually clinical.",
+      "State the diagnosis and compare operative versus non-operative treatment."
+    ],
+    idealDifferentials: [
+      { name: "Achilles tendon rupture", weight: "strong", why: "Classic mechanism, palpable gap and positive Thompson test." },
+      { name: "Plantaris rupture", weight: "partial", why: "Can mimic a pop in the calf but power loss and gap point to Achilles rupture." },
+      { name: "Gastrocnemius tear", weight: "partial", why: "May cause acute calf pain but the ankle findings fit Achilles rupture better." }
+    ],
+    management: {
+      immediate: ["Immobilise in equinus and arrange urgent foot and ankle review.", "Discuss VTE risk, weight-bearing protocol and patient factors.", "Document skin condition and tendon gap."],
+      definitive: ["Functional bracing pathway can give good outcomes in many patients.", "Surgery may reduce re-rupture risk in selected active patients but has wound/nerve risks.", "Early rehabilitation is central regardless of pathway."],
+      complications: ["Re-rupture", "Sural nerve injury after surgery", "Stiffness and calf weakness"]
+    },
+    compare: {
+      against: "Gastrocnemius tear",
+      rows: [
+        ["Gap", "Often palpable tendon gap", "No tendon gap"],
+        ["Thompson test", "Positive", "Negative"],
+        ["Push off", "Marked weakness", "Painful but tendon intact"],
+        ["Treatment focus", "Boot/bracing vs repair", "Physiotherapy and relative rest"]
+      ]
+    },
+    takeaways: [
+      "Most Achilles ruptures are diagnosed clinically.",
+      "The modern question is rarely simply surgery versus no surgery; it is which patients benefit from which pathway.",
+      "Early functional rehabilitation matters."
+    ]
+  },
+  {
+    id: 8,
+    topic: "Hand",
+    diagnosis: "Scaphoid fracture",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "24-year-old man falls onto an outstretched hand while skiing.",
+      "He has radial-sided wrist pain and reduced grip strength.",
+      "Anatomical snuffbox tenderness and pain on axial loading of the thumb.",
+      "Initial plain radiographs are normal.",
+      "State the likely diagnosis and your next investigation and management steps."
+    ],
+    idealDifferentials: [
+      { name: "Scaphoid fracture", weight: "strong", why: "Mechanism and snuffbox tenderness with normal initial radiographs are classic." },
+      { name: "Wrist sprain", weight: "partial", why: "Possible, but missing an occult scaphoid fracture is the key concern." },
+      { name: "Distal radius fracture", weight: "partial", why: "Common FOOSH injury but imaging and focal signs are less supportive." }
+    ],
+    management: {
+      immediate: ["Immobilise in a splint or cast if clinically suspected.", "Arrange MRI or repeat imaging pathway according to local protocol.", "Advise smoking cessation if relevant because union matters."],
+      definitive: ["Undisplaced fractures often treated in cast.", "Displaced, proximal pole, or unstable patterns may need fixation.", "Monitor for union and watch for non-union or AVN."],
+      complications: ["Non-union", "Avascular necrosis of proximal pole", "SNAC wrist"]
+    },
+    compare: {
+      against: "Wrist sprain",
+      rows: [
+        ["Mechanism", "FOOSH common", "FOOSH common"],
+        ["Snuffbox tenderness", "Typical", "Not specifically typical"],
+        ["Initial X-ray", "May be normal", "Normal"],
+        ["Risk if missed", "Non-union / AVN", "Usually self-limiting"]
+      ]
+    },
+    takeaways: [
+      "A normal initial X-ray does not exclude scaphoid fracture.",
+      "Occult scaphoid injury is a classic viva trap.",
+      "Think about displacement and proximal pole location when discussing management."
+    ]
+  },
+  {
+    id: 9,
+    topic: "Spine",
+    diagnosis: "Cauda equina syndrome",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "48-year-old man presents with severe low back pain and bilateral sciatica.",
+      "He now reports urinary difficulty, saddle numbness, and altered perianal sensation over the last 12 hours.",
+      "Reduced ankle reflexes bilaterally. Saddle sensory change present. Anal tone reduced.",
+      "Urgent MRI demonstrates a large central L4/5 disc prolapse compressing the cauda equina.",
+      "State the diagnosis and emergency management."
+    ],
+    idealDifferentials: [
+      { name: "Cauda equina syndrome", weight: "strong", why: "Red-flag bowel/bladder and saddle symptoms with MRI confirmation are classic." },
+      { name: "Lumbar disc prolapse without cauda equina", weight: "partial", why: "Related pathology but the sphincter/saddle features elevate this to cauda equina syndrome." },
+      { name: "Conus medullaris syndrome", weight: "partial", why: "A cord-end differential, though imaging here identifies a lower lumbar disc cause." }
+    ],
+    management: {
+      immediate: ["This is an emergency: urgent senior review and decompression pathway.", "Document neurology, bladder status and timing carefully.", "Urgent MRI if not already obtained."],
+      definitive: ["Emergency decompression, commonly discectomy/laminectomy depending on pathology.", "Post-op rehab and bladder management support.", "Clear documentation is crucial for both patient care and medicolegal reasons."],
+      complications: ["Permanent bladder/bowel dysfunction", "Sexual dysfunction", "Persistent neurological deficit"]
+    },
+    compare: {
+      against: "Lumbar disc prolapse without cauda equina",
+      rows: [
+        ["Sciatica", "Often bilateral", "Often unilateral"],
+        ["Saddle anaesthesia", "Present", "Absent"],
+        ["Bladder symptoms", "Present", "Absent"],
+        ["Urgency", "Neurosurgical/orthopaedic emergency", "Urgent but not same emergency"]
+      ]
+    },
+    takeaways: [
+      "Cauda equina syndrome is about red flags plus action, not just naming the diagnosis.",
+      "Timing, documentation, and decompression pathway are central exam themes.",
+      "Do not falsely reassure on the basis of preserved motor power alone."
+    ]
+  },
+  {
+    id: 10,
+    topic: "Sports",
+    diagnosis: "Anterior cruciate ligament rupture",
+    stageTitles: ["Initial presentation", "History", "Examination", "Investigations", "Decision point"],
+    stages: [
+      "25-year-old woman twists while pivoting in netball and hears a pop in the knee.",
+      "Rapid swelling develops within 2 hours and she feels the knee is unstable.",
+      "Positive Lachman test and soft endpoint. Joint line not especially tender.",
+      "MRI shows complete ACL rupture with pivot shift bone bruising pattern.",
+      "State the diagnosis and discuss operative versus non-operative management."
+    ],
+    idealDifferentials: [
+      { name: "Anterior cruciate ligament rupture", weight: "strong", why: "Pivot injury, pop, immediate haemarthrosis and positive Lachman are classic." },
+      { name: "Meniscal tear", weight: "partial", why: "Twisting injury differential, but immediate haemarthrosis and Lachman fit ACL rupture better." },
+      { name: "Patellar dislocation", weight: "partial", why: "Can produce haemarthrosis but the examination and mechanism are less typical here." }
+    ],
+    management: {
+      immediate: ["Reduce swelling, restore extension, and start rehabilitation.", "Assess for associated meniscal or collateral injury.", "Counsel regarding instability risk and sporting demands."],
+      definitive: ["Structured non-operative rehab suits some low-demand or coping patients.", "Reconstruction for symptomatic instability, pivoting sports, or associated meniscal goals in selected patients.", "Timing should respect swelling control and range recovery."],
+      complications: ["Recurrent instability", "Secondary meniscal damage", "Post-traumatic osteoarthritis"]
+    },
+    compare: {
+      against: "Meniscal tear",
+      rows: [
+        ["Swelling onset", "Rapid haemarthrosis", "Often delayed effusion"],
+        ["Instability", "Giving way common", "Locking/catching may predominate"],
+        ["Lachman", "Positive", "Usually negative"],
+        ["Treatment focus", "Rehab ± reconstruction", "Rehab or meniscal preservation strategy"]
+      ]
+    },
+    takeaways: [
+      "FRCS answers on ACL should balance patient goals, instability, and associated injury rather than reflexively saying reconstruct.",
+      "Restore motion before reconstruction if possible.",
+      "Pivot-shift bone bruise pattern is a classic MRI clue."
     ]
   }
 ];
-
-const PARTIAL_GROUPS = {
-  "subspecialty": {
-    "Paediatric": [
-      "Young adult hip",
-      "Sports knee",
-      "Deformity"
-    ],
-    "Spine": [
-      "Tumour"
-    ],
-    "Shoulder": [
-      "Arthroplasty",
-      "Trauma"
-    ],
-    "Elbow": [
-      "Hand",
-      "Trauma"
-    ],
-    "Hand": [
-      "Elbow"
-    ],
-    "Trauma": [
-      "Arthroplasty",
-      "Foot and ankle",
-      "Spine",
-      "Elbow",
-      "Shoulder"
-    ],
-    "Arthroplasty": [
-      "Trauma",
-      "Young adult hip",
-      "Shoulder",
-      "Knee"
-    ],
-    "Young adult hip": [
-      "Arthroplasty",
-      "Paediatric"
-    ],
-    "Sports knee": [
-      "Knee",
-      "Paediatric"
-    ],
-    "Knee": [
-      "Sports knee",
-      "Arthroplasty"
-    ],
-    "Tumour": [
-      "Spine",
-      "Infection"
-    ],
-    "Infection": [
-      "Tumour",
-      "Trauma"
-    ],
-    "Foot and ankle": [
-      "Trauma",
-      "Deformity"
-    ],
-    "Deformity": [
-      "Paediatric",
-      "Foot and ankle",
-      "Young adult hip"
-    ]
-  },
-  "region": {
-    "Shoulder": [
-      "Elbow",
-      "Spine"
-    ],
-    "Elbow": [
-      "Shoulder",
-      "Forearm",
-      "Hand"
-    ],
-    "Forearm": [
-      "Elbow",
-      "Wrist"
-    ],
-    "Wrist": [
-      "Hand",
-      "Forearm",
-      "Elbow"
-    ],
-    "Hand": [
-      "Wrist",
-      "Elbow"
-    ],
-    "Spine": [
-      "Pelvis",
-      "Shoulder"
-    ],
-    "Pelvis": [
-      "Hip",
-      "Spine"
-    ],
-    "Hip": [
-      "Pelvis",
-      "Femur",
-      "Knee"
-    ],
-    "Femur": [
-      "Hip",
-      "Knee"
-    ],
-    "Knee": [
-      "Hip",
-      "Femur",
-      "Tibia"
-    ],
-    "Tibia": [
-      "Knee",
-      "Ankle"
-    ],
-    "Ankle": [
-      "Foot and ankle",
-      "Midfoot",
-      "Forefoot",
-      "Tibia"
-    ],
-    "Foot and ankle": [
-      "Ankle",
-      "Midfoot",
-      "Forefoot"
-    ],
-    "Midfoot": [
-      "Forefoot",
-      "Foot and ankle",
-      "Ankle"
-    ],
-    "Forefoot": [
-      "Midfoot",
-      "Foot and ankle",
-      "Ankle"
-    ]
-  },
-  "pathology": {
-    "Trauma": [
-      "Instability",
-      "Periprosthetic",
-      "Non-union",
-      "Stiffness"
-    ],
-    "Instability": [
-      "Trauma",
-      "Degenerative"
-    ],
-    "Degenerative": [
-      "Impingement",
-      "Inflammatory",
-      "Overuse",
-      "Stiffness"
-    ],
-    "Inflammatory": [
-      "Infection",
-      "Degenerative"
-    ],
-    "Infection": [
-      "Inflammatory",
-      "Tumour"
-    ],
-    "Tumour": [
-      "Infection"
-    ],
-    "Developmental": [
-      "Deformity",
-      "Avascular"
-    ],
-    "Deformity": [
-      "Developmental",
-      "Degenerative"
-    ],
-    "Avascular": [
-      "Developmental",
-      "Degenerative",
-      "Tumour"
-    ],
-    "Implant failure": [
-      "Periprosthetic",
-      "Degenerative",
-      "Infection"
-    ],
-    "Periprosthetic": [
-      "Implant failure",
-      "Trauma"
-    ],
-    "Neurological": [
-      "Instability",
-      "Inflammatory"
-    ],
-    "Overuse": [
-      "Degenerative",
-      "Inflammatory"
-    ],
-    "Impingement": [
-      "Degenerative",
-      "Instability"
-    ],
-    "Non-union": [
-      "Trauma",
-      "Implant failure"
-    ],
-    "Stiffness": [
-      "Degenerative",
-      "Inflammatory"
-    ]
-  },
-  "investigation": {
-    "X-ray": [
-      "CT",
-      "MRI",
-      "Clinical"
-    ],
-    "CT": [
-      "X-ray",
-      "MRI"
-    ],
-    "MRI": [
-      "CT",
-      "X-ray",
-      "Ultrasound"
-    ],
-    "Ultrasound": [
-      "MRI",
-      "Clinical",
-      "Aspiration"
-    ],
-    "Aspiration": [
-      "Ultrasound",
-      "MRI"
-    ],
-    "Clinical": [
-      "X-ray",
-      "Ultrasound",
-      "Neurophysiology"
-    ],
-    "Neurophysiology": [
-      "Clinical",
-      "MRI"
-    ]
-  },
-  "management": {
-    "Fixation": [
-      "Revision",
-      "Repair",
-      "Reduction",
-      "Fusion",
-      "Casting"
-    ],
-    "Revision": [
-      "Fixation",
-      "Arthroplasty",
-      "Reconstruction"
-    ],
-    "Arthroplasty": [
-      "Revision",
-      "Reconstruction",
-      "Fixation"
-    ],
-    "Reconstruction": [
-      "Repair",
-      "Revision",
-      "Arthroplasty",
-      "Arthroscopy"
-    ],
-    "Repair": [
-      "Reconstruction",
-      "Fixation",
-      "Splintage"
-    ],
-    "Reduction": [
-      "Fixation",
-      "Casting"
-    ],
-    "Washout": [
-      "Antibiotics",
-      "Debridement",
-      "Revision"
-    ],
-    "Antibiotics": [
-      "Washout",
-      "Debridement",
-      "Observation"
-    ],
-    "Debridement": [
-      "Antibiotics",
-      "Washout",
-      "Fixation"
-    ],
-    "Observation": [
-      "Physiotherapy",
-      "Rehabilitation",
-      "Antibiotics"
-    ],
-    "Physiotherapy": [
-      "Observation",
-      "Rehabilitation",
-      "Splintage"
-    ],
-    "Rehabilitation": [
-      "Physiotherapy",
-      "Observation",
-      "Splintage"
-    ],
-    "Splintage": [
-      "Physiotherapy",
-      "Repair",
-      "Casting"
-    ],
-    "Casting": [
-      "Splintage",
-      "Reduction",
-      "Fixation"
-    ],
-    "Fusion": [
-      "Arthroplasty",
-      "Fixation",
-      "Reconstruction"
-    ],
-    "Arthroscopy": [
-      "Reconstruction",
-      "Fixation",
-      "Physiotherapy"
-    ],
-    "Oncological": [
-      "Fixation",
-      "Reconstruction"
-    ],
-    "Containment": [
-      "Observation",
-      "Fixation"
-    ],
-    "Harness": [
-      "Casting",
-      "Reduction"
-    ],
-    "Release": [
-      "Reconstruction",
-      "Physiotherapy"
-    ],
-    "Lengthening": [
-      "Osteotomy",
-      "Reconstruction"
-    ],
-    "Osteotomy": [
-      "Reconstruction",
-      "Fixation",
-      "Lengthening"
-    ],
-    "Offloading": [
-      "Observation",
-      "Casting"
-    ]
-  }
-};

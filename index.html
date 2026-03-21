@@ -3,119 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OrthoGuess FRCS</title>
+  <title>FRCYES Viva Mode</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar">
+    <header class="hero">
       <div>
-        <p class="eyebrow">FRCS Trauma & Orth revision game</p>
-        <h1>OrthoGuess FRCS</h1>
-        <p class="subtitle">Guess the orthopaedic diagnosis in 8 tries.</p>
+        <p class="eyebrow">FRCYES</p>
+        <h1>Orthopaedic Viva Revision</h1>
+        <p class="subtext">A stepwise FRCS practice tool focused on reasoning, differentials, and management rather than blind guessing.</p>
       </div>
-      <div class="controls-row">
-        <button id="newGameBtn">New case</button>
-        <button id="howToBtn">How to play</button>
+      <div class="hero-actions">
+        <button id="newCaseBtn" class="primary-btn">New case</button>
       </div>
     </header>
 
-    <section class="card intro-card">
-      <div>
+    <section class="toolbar card">
+      <div class="field">
         <label for="modeSelect">Mode</label>
-        <select id="modeSelect">
-          <option value="practice">Practice</option>
-          <option value="daily">Daily</option>
-        </select>
+        <select id="modeSelect"></select>
       </div>
-      <div>
-        <label for="topicSelect">Practice topic</label>
-        <select id="topicSelect">
-          <option value="All">All topics</option>
-        </select>
+      <div class="field">
+        <label for="topicSelect">Topic</label>
+        <select id="topicSelect"></select>
       </div>
-      <div class="wide-input">
-        <label for="guessInput">Your guess</label>
-        <input id="guessInput" list="conditionsList" placeholder="Start typing a diagnosis..." autocomplete="off" />
-        <datalist id="conditionsList"></datalist>
-      </div>
-      <div class="submit-wrap">
-        <button id="submitGuessBtn" class="primary">Submit guess</button>
+      <div class="stats-wrap">
+        <div class="stat-box">
+          <span class="stat-label">Cases done</span>
+          <strong id="casesDone">0</strong>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Correct dx</span>
+          <strong id="correctDx">0</strong>
+        </div>
       </div>
     </section>
 
-    <section class="status-grid">
-      <div class="card stat-card"><span class="stat-label">Attempts left</span><span class="stat-value" id="attemptsRemaining">8</span></div>
-      <div class="card stat-card"><span class="stat-label">Streak</span><span class="stat-value" id="streakValue">0</span></div>
-      <div class="card stat-card"><span class="stat-label">Played</span><span class="stat-value" id="playedValue">0</span></div>
-      <div class="card stat-card"><span class="stat-label">Won</span><span class="stat-value" id="wonValue">0</span></div>
-      <div class="card stat-card"><span class="stat-label">Bank size</span><span class="stat-value" id="bankSizeValue">0</span></div>
-    </section>
+    <main class="grid-layout">
+      <section class="card main-card">
+        <div class="case-header">
+          <div>
+            <p class="muted">Current stage</p>
+            <h2 id="stageTitle">Initial presentation</h2>
+          </div>
+          <div class="pill" id="caseTopicPill">Topic</div>
+        </div>
 
-    <section class="legend card">
-      <div class="legend-item"><span class="swatch exact"></span> Exact match</div>
-      <div class="legend-item"><span class="swatch partial"></span> Related / close family</div>
-      <div class="legend-item"><span class="swatch wrong"></span> Wrong</div>
-      <div class="legend-item"><span class="swatch higher"></span> Higher / older / more chronic</div>
-      <div class="legend-item"><span class="swatch lower"></span> Lower / younger / more acute</div>
-    </section>
+        <div id="promptBox" class="prompt-box"></div>
 
-    <section class="main-grid">
-      <section class="card table-card">
-        <div class="table-wrap">
-          <table id="resultsTable">
-            <thead>
-              <tr>
-                <th>Guess</th>
-                <th>Subspecialty</th>
-                <th>Region</th>
-                <th>Pathology</th>
-                <th>Age</th>
-                <th>Acuity</th>
-                <th>Investigation</th>
-                <th>Management</th>
-              </tr>
-            </thead>
-            <tbody id="resultsBody"></tbody>
-          </table>
+        <div class="stage-controls">
+          <button id="prevStageBtn" class="secondary-btn">Back</button>
+          <div class="stage-progress-wrap">
+            <div class="stage-progress"><div id="stageProgressBar"></div></div>
+            <p id="stageCounter" class="muted small-text"></p>
+          </div>
+          <button id="nextStageBtn" class="primary-btn">Reveal next stage</button>
+        </div>
+
+        <div class="entry-grid">
+          <div class="entry-panel">
+            <h3>Differentials</h3>
+            <p class="muted">Enter up to 3 plausible differentials at this stage.</p>
+            <div class="input-row">
+              <input id="differentialInput" type="text" placeholder="Add a differential and press Enter" autocomplete="off" />
+              <button id="addDifferentialBtn" class="secondary-btn">Add</button>
+            </div>
+            <div id="differentialChips" class="chip-wrap"></div>
+            <button id="checkDifferentialsBtn" class="primary-btn full-width">Check differentials</button>
+            <div id="differentialFeedback" class="feedback-box hidden"></div>
+          </div>
+
+          <div class="entry-panel">
+            <h3>Final diagnosis</h3>
+            <p class="muted">Commit once you have seen enough information.</p>
+            <div class="input-row">
+              <select id="diagnosisSelect"></select>
+              <button id="submitDiagnosisBtn" class="primary-btn">Submit</button>
+            </div>
+            <div id="diagnosisFeedback" class="feedback-box hidden"></div>
+          </div>
         </div>
       </section>
 
       <aside class="side-column">
-        <section class="card hint-card">
-          <h2>Case clue</h2>
-          <p id="hintText"></p>
+        <section class="card side-card">
+          <h3>Management viva</h3>
+          <div id="managementBox" class="stacked-boxes"></div>
         </section>
 
-        <section class="card hint-card">
-          <h2>Progressive viva hints</h2>
-          <ul id="vivaHints" class="hint-list"></ul>
+        <section class="card side-card">
+          <h3>Compare and discriminate</h3>
+          <div id="compareBox" class="compare-box muted">Submit the diagnosis to see the comparison table.</div>
         </section>
 
-        <section class="card result-card hidden" id="resultCard">
-          <h2 id="resultTitle"></h2>
-          <p id="resultText"></p>
-          <div id="answerMeta" class="answer-meta"></div>
-          <div class="result-actions">
-            <button id="copyShareBtn">Copy result</button>
-          </div>
+        <section class="card side-card">
+          <h3>Takeaways</h3>
+          <div id="takeawaysBox" class="stacked-boxes muted">Complete the case to reveal the teaching points.</div>
         </section>
       </aside>
-    </section>
+    </main>
   </div>
-
-  <dialog id="howToDialog">
-    <h2>How to play</h2>
-    <p>Choose a diagnosis from the list and submit your guess. You have 8 attempts.</p>
-    <ul>
-      <li>Each column gives feedback for the target diagnosis.</li>
-      <li>Age and acuity use directional arrows.</li>
-      <li>Daily mode gives everyone the same case for the day.</li>
-      <li>Practice mode can be filtered by topic.</li>
-      <li>Progressive viva hints unlock after attempts 3 and 6.</li>
-    </ul>
-    <button id="closeHowToBtn">Close</button>
-  </dialog>
 
   <script src="data.js"></script>
   <script src="app.js"></script>

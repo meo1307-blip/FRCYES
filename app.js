@@ -1,294 +1,279 @@
-const AGE_ORDER = ["Infant", "Child", "Adolescent", "Young adult", "Adult", "Older adult"];
-const ACUITY_ORDER = ["Acute", "Subacute", "Recurrent", "Chronic"];
-
-const state = {
-  target: null,
-  attempts: 0,
-  maxAttempts: 8,
-  gameOver: false,
-  mode: "practice",
-  topic: "All",
-  pool: [...CONDITIONS]
-};
+const STORAGE_KEY = "frcyes_viva_stats_v1";
+const allCases = window.FRCYES_CASES || [];
 
 const els = {
-  guessInput: document.getElementById("guessInput"),
-  datalist: document.getElementById("conditionsList"),
-  submitGuessBtn: document.getElementById("submitGuessBtn"),
-  newGameBtn: document.getElementById("newGameBtn"),
-  resultsBody: document.getElementById("resultsBody"),
-  attemptsRemaining: document.getElementById("attemptsRemaining"),
-  hintText: document.getElementById("hintText"),
-  vivaHints: document.getElementById("vivaHints"),
-  resultCard: document.getElementById("resultCard"),
-  resultTitle: document.getElementById("resultTitle"),
-  resultText: document.getElementById("resultText"),
-  answerMeta: document.getElementById("answerMeta"),
-  howToBtn: document.getElementById("howToBtn"),
-  howToDialog: document.getElementById("howToDialog"),
-  closeHowToBtn: document.getElementById("closeHowToBtn"),
   modeSelect: document.getElementById("modeSelect"),
   topicSelect: document.getElementById("topicSelect"),
-  streakValue: document.getElementById("streakValue"),
-  playedValue: document.getElementById("playedValue"),
-  wonValue: document.getElementById("wonValue"),
-  bankSizeValue: document.getElementById("bankSizeValue"),
-  copyShareBtn: document.getElementById("copyShareBtn")
+  diagnosisSelect: document.getElementById("diagnosisSelect"),
+  stageTitle: document.getElementById("stageTitle"),
+  caseTopicPill: document.getElementById("caseTopicPill"),
+  promptBox: document.getElementById("promptBox"),
+  stageCounter: document.getElementById("stageCounter"),
+  stageProgressBar: document.getElementById("stageProgressBar"),
+  prevStageBtn: document.getElementById("prevStageBtn"),
+  nextStageBtn: document.getElementById("nextStageBtn"),
+  differentialInput: document.getElementById("differentialInput"),
+  addDifferentialBtn: document.getElementById("addDifferentialBtn"),
+  differentialChips: document.getElementById("differentialChips"),
+  checkDifferentialsBtn: document.getElementById("checkDifferentialsBtn"),
+  differentialFeedback: document.getElementById("differentialFeedback"),
+  submitDiagnosisBtn: document.getElementById("submitDiagnosisBtn"),
+  diagnosisFeedback: document.getElementById("diagnosisFeedback"),
+  managementBox: document.getElementById("managementBox"),
+  compareBox: document.getElementById("compareBox"),
+  takeawaysBox: document.getElementById("takeawaysBox"),
+  newCaseBtn: document.getElementById("newCaseBtn"),
+  casesDone: document.getElementById("casesDone"),
+  correctDx: document.getElementById("correctDx")
 };
 
-function init() {
-  populateTopics();
-  populateDatalist(CONDITIONS);
-  bindEvents();
-  loadStats();
-  els.bankSizeValue.textContent = CONDITIONS.length;
-  startGame();
+let appState = {
+  mode: "Practice",
+  topic: "All topics",
+  caseData: null,
+  stageIndex: 0,
+  differentials: [],
+  diagnosisSubmitted: false,
+  stats: loadStats()
+};
+
+function loadStats() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { casesDone: 0, correctDx: 0 };
+  } catch {
+    return { casesDone: 0, correctDx: 0 };
+  }
 }
 
-function populateTopics() {
-  const topics = [...new Set(CONDITIONS.map(c => c.subspecialty))].sort((a, b) => a.localeCompare(b));
-  topics.forEach(topic => {
-    const option = document.createElement("option");
-    option.value = topic;
-    option.textContent = topic;
-    els.topicSelect.appendChild(option);
+function saveStats() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.stats));
+}
+
+function titleCase(str) {
+  return str.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function normalize(text) {
+  return (text || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ");
+}
+
+function buildSelect(selectEl, options, value) {
+  selectEl.innerHTML = "";
+  options.forEach(option => {
+    const opt = document.createElement("option");
+    opt.value = option;
+    opt.textContent = option;
+    if (option === value) opt.selected = true;
+    selectEl.appendChild(opt);
   });
 }
 
-function populateDatalist(list) {
-  els.datalist.innerHTML = list.map(c => `<option value="${c.name.replace(/"/g, '&quot;')}"></option>`).join("");
+function getTopics() {
+  return ["All topics", ...new Set(allCases.map(c => c.topic))];
 }
 
-function bindEvents() {
-  els.submitGuessBtn.addEventListener("click", submitGuess);
-  els.newGameBtn.addEventListener("click", startGame);
-  els.howToBtn.addEventListener("click", () => els.howToDialog.showModal());
-  els.closeHowToBtn.addEventListener("click", () => els.howToDialog.close());
-  els.modeSelect.addEventListener("change", () => {
-    state.mode = els.modeSelect.value;
-    syncPoolAndInputs();
-    startGame();
-  });
-  els.topicSelect.addEventListener("change", () => {
-    state.topic = els.topicSelect.value;
-    syncPoolAndInputs();
-    startGame();
-  });
-  els.guessInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") submitGuess();
-  });
-  els.copyShareBtn.addEventListener("click", copyResult);
+function getCasePool() {
+  if (appState.topic === "All topics") return allCases;
+  return allCases.filter(c => c.topic === appState.topic);
 }
 
-function syncPoolAndInputs() {
-  state.mode = els.modeSelect.value;
-  state.topic = els.topicSelect.value;
-  state.pool = state.mode === "daily" || state.topic === "All"
-    ? [...CONDITIONS]
-    : CONDITIONS.filter(c => c.subspecialty === state.topic);
-
-  if (!state.pool.length) state.pool = [...CONDITIONS];
-  populateDatalist(state.pool);
-  els.topicSelect.disabled = state.mode === "daily";
+function getDailyCase(pool) {
+  const today = new Date();
+  const seed = Number(`${today.getUTCFullYear()}${today.getUTCMonth()+1}${today.getUTCDate()}`);
+  return pool[seed % pool.length];
 }
 
-function startGame() {
-  syncPoolAndInputs();
-  state.target = state.mode === "daily" ? getDailyCondition() : randomCondition(state.pool);
-  state.attempts = 0;
-  state.gameOver = false;
-  els.resultsBody.innerHTML = "";
-  els.guessInput.value = "";
-  els.attemptsRemaining.textContent = String(state.maxAttempts);
-  els.resultCard.classList.add("hidden");
-  els.hintText.textContent = buildHint(state.target);
-  renderVivaHints();
-}
-
-function randomCondition(pool) {
+function chooseCase() {
+  const pool = getCasePool();
+  if (!pool.length) return allCases[0];
+  if (appState.mode === "Daily") return getDailyCase(pool);
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function getDailyCondition() {
-  const dailyPool = [...CONDITIONS];
-  const today = new Date();
-  const seed = `${today.getUTCFullYear()}-${today.getUTCMonth() + 1}-${today.getUTCDate()}`;
-  let hash = 0;
-  for (let i = 0; i < seed.length; i += 1) {
-    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
-    hash |= 0;
-  }
-  return dailyPool[Math.abs(hash) % dailyPool.length];
+function resetCase() {
+  appState.caseData = chooseCase();
+  appState.stageIndex = 0;
+  appState.differentials = [];
+  appState.diagnosisSubmitted = false;
+  els.differentialInput.value = "";
+  els.differentialFeedback.classList.add("hidden");
+  els.diagnosisFeedback.classList.add("hidden");
+  render();
 }
 
-function buildHint(target) {
-  return `Target profile: ${target.subspecialty} / ${target.region}. Think exam-style first-line investigation and definitive management.`;
+function renderStats() {
+  els.casesDone.textContent = appState.stats.casesDone;
+  els.correctDx.textContent = appState.stats.correctDx;
 }
 
-function renderVivaHints() {
-  els.vivaHints.innerHTML = "";
-  const hint1 = document.createElement("li");
-  hint1.textContent = state.attempts >= 3 ? state.target.hints[0] : "Hint unlocks after 3 guesses.";
-  const hint2 = document.createElement("li");
-  hint2.textContent = state.attempts >= 6 ? state.target.hints[1] : "Second hint unlocks after 6 guesses.";
-  els.vivaHints.append(hint1, hint2);
-}
-
-function submitGuess() {
-  if (state.gameOver) return;
-  const value = els.guessInput.value.trim();
-  const guess = state.pool.find(c => c.name.toLowerCase() === value.toLowerCase()) || CONDITIONS.find(c => c.name.toLowerCase() === value.toLowerCase());
-
-  if (!guess) {
-    alert("Choose a diagnosis from the list.");
-    return;
-  }
-
-  if ([...els.resultsBody.querySelectorAll("tr")].some(row => row.dataset.name === guess.name)) {
-    alert("You already used that guess.");
-    return;
-  }
-
-  state.attempts += 1;
-  els.attemptsRemaining.textContent = String(state.maxAttempts - state.attempts);
-  renderRow(guess, state.target);
-  els.guessInput.value = "";
-  renderVivaHints();
-
-  if (guess.name === state.target.name) {
-    endGame(true);
-    return;
-  }
-
-  if (state.attempts >= state.maxAttempts) {
-    endGame(false);
-  }
-}
-
-function compareField(field, guessValue, targetValue) {
-  if (guessValue === targetValue) {
-    return { className: "cell-exact", text: guessValue };
-  }
-
-  if (field === "age") {
-    const g = AGE_ORDER.indexOf(guessValue);
-    const t = AGE_ORDER.indexOf(targetValue);
-    return {
-      className: g < t ? "cell-higher" : "cell-lower",
-      text: `${guessValue} ${g < t ? "↑" : "↓"}`
-    };
-  }
-
-  if (field === "acuity") {
-    const g = ACUITY_ORDER.indexOf(guessValue);
-    const t = ACUITY_ORDER.indexOf(targetValue);
-    return {
-      className: g < t ? "cell-higher" : "cell-lower",
-      text: `${guessValue} ${g < t ? "↑" : "↓"}`
-    };
-  }
-
-  const partialMap = PARTIAL_GROUPS[field] || {};
-  if ((partialMap[guessValue] || []).includes(targetValue) || (partialMap[targetValue] || []).includes(guessValue)) {
-    return { className: "cell-partial", text: guessValue };
-  }
-
-  return { className: "cell-wrong", text: guessValue };
-}
-
-function renderRow(guess, target) {
-  const tr = document.createElement("tr");
-  tr.dataset.name = guess.name;
-
-  const fields = [
-    { key: "name", label: guess.name, forcedClass: guess.name === target.name ? "cell-exact" : "cell-wrong" },
-    { key: "subspecialty" },
-    { key: "region" },
-    { key: "pathology" },
-    { key: "age" },
-    { key: "acuity" },
-    { key: "investigation" },
-    { key: "management" }
-  ];
-
-  fields.forEach((field) => {
-    const td = document.createElement("td");
-    if (field.key === "name") {
-      td.textContent = field.label;
-      td.className = field.forcedClass;
-    } else {
-      const result = compareField(field.key, guess[field.key], target[field.key]);
-      td.textContent = result.text;
-      td.className = result.className;
-    }
-    tr.appendChild(td);
+function renderDifferentialChips() {
+  els.differentialChips.innerHTML = "";
+  appState.differentials.forEach((diff, idx) => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.innerHTML = `<span>${diff}</span>`;
+    const x = document.createElement("button");
+    x.type = "button";
+    x.textContent = "×";
+    x.addEventListener("click", () => {
+      appState.differentials.splice(idx, 1);
+      renderDifferentialChips();
+    });
+    chip.appendChild(x);
+    els.differentialChips.appendChild(chip);
   });
-
-  els.resultsBody.prepend(tr);
 }
 
-function endGame(win) {
-  state.gameOver = true;
-  updateStats(win);
-  els.resultCard.classList.remove("hidden");
-  els.resultTitle.textContent = win ? "Correct" : "Out of guesses";
-  els.resultText.textContent = win
-    ? `You identified ${state.target.name} in ${state.attempts} guess${state.attempts === 1 ? "" : "es"}.`
-    : `The answer was ${state.target.name}.`;
-  els.answerMeta.innerHTML = `
-    <div><strong>Topic:</strong> ${state.target.subspecialty}</div>
-    <div><strong>Region:</strong> ${state.target.region}</div>
-    <div><strong>Pathology:</strong> ${state.target.pathology}</div>
-    <div><strong>Age:</strong> ${state.target.age}</div>
-    <div><strong>Acuity:</strong> ${state.target.acuity}</div>
-    <div><strong>Investigation:</strong> ${state.target.investigation}</div>
-    <div><strong>Management:</strong> ${state.target.management}</div>
+function renderManagement() {
+  const m = appState.caseData.management;
+  els.managementBox.innerHTML = [
+    cardHtml("Immediate", m.immediate),
+    cardHtml("Definitive", m.definitive),
+    cardHtml("Complications", m.complications)
+  ].join("");
+}
+
+function cardHtml(title, items) {
+  return `<div class="teach-card"><h4>${title}</h4><ul>${items.map(i => `<li>${i}</li>`).join("")}</ul></div>`;
+}
+
+function renderCompare() {
+  if (!appState.diagnosisSubmitted) {
+    els.compareBox.className = "compare-box muted";
+    els.compareBox.textContent = "Submit the diagnosis to see the comparison table.";
+    return;
+  }
+  const compare = appState.caseData.compare;
+  const html = `
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>${appState.caseData.diagnosis}</th>
+          <th>${compare.against}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${compare.rows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join("")}
+      </tbody>
+    </table>
   `;
+  els.compareBox.className = "compare-box";
+  els.compareBox.innerHTML = html;
 }
 
-function buildShareText() {
-  const title = state.mode === "daily" ? "OrthoGuess FRCS Daily" : "OrthoGuess FRCS";
-  const score = state.gameOver && state.target ? `${state.attempts}/${state.maxAttempts}` : "unfinished";
-  const rows = [...els.resultsBody.querySelectorAll("tr")].reverse().map((row) => {
-    return [...row.querySelectorAll("td")].slice(1).map(td => {
-      if (td.classList.contains("cell-exact")) return "🟩";
-      if (td.classList.contains("cell-partial")) return "🟨";
-      if (td.classList.contains("cell-higher") || td.classList.contains("cell-lower")) return "🟦";
-      return "🟥";
-    }).join("");
-  }).join("\n");
-  return `${title} ${score}\n${rows}`;
-}
-
-async function copyResult() {
-  const text = buildShareText();
-  try {
-    await navigator.clipboard.writeText(text);
-    els.copyShareBtn.textContent = "Copied";
-    setTimeout(() => { els.copyShareBtn.textContent = "Copy result"; }, 1200);
-  } catch {
-    alert(text);
+function renderTakeaways() {
+  if (!appState.diagnosisSubmitted) {
+    els.takeawaysBox.className = "stacked-boxes muted";
+    els.takeawaysBox.textContent = "Complete the case to reveal the teaching points.";
+    return;
   }
+  els.takeawaysBox.className = "stacked-boxes";
+  els.takeawaysBox.innerHTML = cardHtml("Key takeaways", appState.caseData.takeaways);
 }
 
-function loadStats() {
-  const stats = JSON.parse(localStorage.getItem("orthoGuessStats") || '{"played":0,"won":0,"streak":0}');
-  els.playedValue.textContent = stats.played;
-  els.wonValue.textContent = stats.won;
-  els.streakValue.textContent = stats.streak;
+function renderDiagnosisOptions() {
+  const dxs = [...new Set(allCases.map(c => c.diagnosis))].sort();
+  buildSelect(els.diagnosisSelect, ["Select diagnosis", ...dxs], "Select diagnosis");
 }
 
-function updateStats(win) {
-  const stats = JSON.parse(localStorage.getItem("orthoGuessStats") || '{"played":0,"won":0,"streak":0}');
-  stats.played += 1;
-  if (win) {
-    stats.won += 1;
-    stats.streak += 1;
-  } else {
-    stats.streak = 0;
-  }
-  localStorage.setItem("orthoGuessStats", JSON.stringify(stats));
-  loadStats();
+function render() {
+  const currentCase = appState.caseData;
+  const totalStages = currentCase.stages.length;
+  els.stageTitle.textContent = currentCase.stageTitles[appState.stageIndex];
+  els.caseTopicPill.textContent = currentCase.topic;
+  els.promptBox.textContent = currentCase.stages.slice(0, appState.stageIndex + 1).join("\n\n");
+  els.stageCounter.textContent = `Stage ${appState.stageIndex + 1} of ${totalStages}`;
+  els.stageProgressBar.style.width = `${((appState.stageIndex + 1) / totalStages) * 100}%`;
+  els.prevStageBtn.disabled = appState.stageIndex === 0;
+  els.nextStageBtn.disabled = appState.stageIndex === totalStages - 1;
+  renderDifferentialChips();
+  renderManagement();
+  renderCompare();
+  renderTakeaways();
+  renderStats();
+}
+
+function addDifferential() {
+  const value = els.differentialInput.value.trim();
+  if (!value) return;
+  if (appState.differentials.length >= 3) return;
+  if (appState.differentials.some(d => normalize(d) === normalize(value))) return;
+  appState.differentials.push(value);
+  els.differentialInput.value = "";
+  renderDifferentialChips();
+}
+
+function checkDifferentials() {
+  const ideals = appState.caseData.idealDifferentials;
+  if (!appState.differentials.length) return;
+  const blocks = appState.differentials.map(diff => {
+    const matched = ideals.find(i => normalize(i.name) === normalize(diff));
+    if (matched?.weight === "strong") {
+      return `<div class="feedback-item feedback-good"><strong>${diff}</strong><br>${matched.why}</div>`;
+    }
+    if (matched?.weight === "partial") {
+      return `<div class="feedback-item feedback-warn"><strong>${diff}</strong><br>${matched.why}</div>`;
+    }
+    return `<div class="feedback-item feedback-bad"><strong>${diff}</strong><br>Less likely here. Re-focus on the discriminator clues in the presentation and imaging.</div>`;
+  });
+  els.differentialFeedback.classList.remove("hidden");
+  els.differentialFeedback.innerHTML = `<strong>Feedback</strong>${blocks.join("")}`;
+}
+
+function submitDiagnosis() {
+  const chosen = els.diagnosisSelect.value;
+  if (chosen === "Select diagnosis") return;
+  const correct = normalize(chosen) === normalize(appState.caseData.diagnosis);
+  appState.diagnosisSubmitted = true;
+  appState.stats.casesDone += 1;
+  if (correct) appState.stats.correctDx += 1;
+  saveStats();
+  els.diagnosisFeedback.classList.remove("hidden");
+  els.diagnosisFeedback.innerHTML = correct
+    ? `<div class="feedback-item feedback-good"><strong>Correct.</strong><br>${appState.caseData.diagnosis} is the best diagnosis. Use the management and compare sections to rehearse a full viva answer.</div>`
+    : `<div class="feedback-item feedback-bad"><strong>Not quite.</strong><br>The best diagnosis is <strong>${appState.caseData.diagnosis}</strong>. Review the compare table and takeaways below.</div>`;
+  renderCompare();
+  renderTakeaways();
+  renderStats();
+}
+
+function init() {
+  buildSelect(els.modeSelect, ["Practice", "Daily"], appState.mode);
+  buildSelect(els.topicSelect, getTopics(), appState.topic);
+  renderDiagnosisOptions();
+  resetCase();
+
+  els.modeSelect.addEventListener("change", e => {
+    appState.mode = e.target.value;
+    resetCase();
+  });
+  els.topicSelect.addEventListener("change", e => {
+    appState.topic = e.target.value;
+    resetCase();
+  });
+  els.newCaseBtn.addEventListener("click", resetCase);
+  els.prevStageBtn.addEventListener("click", () => {
+    if (appState.stageIndex > 0) {
+      appState.stageIndex -= 1;
+      render();
+    }
+  });
+  els.nextStageBtn.addEventListener("click", () => {
+    if (appState.stageIndex < appState.caseData.stages.length - 1) {
+      appState.stageIndex += 1;
+      render();
+    }
+  });
+  els.addDifferentialBtn.addEventListener("click", addDifferential);
+  els.differentialInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addDifferential();
+    }
+  });
+  els.checkDifferentialsBtn.addEventListener("click", checkDifferentials);
+  els.submitDiagnosisBtn.addEventListener("click", submitDiagnosis);
 }
 
 init();
