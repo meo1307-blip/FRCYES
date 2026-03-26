@@ -260,7 +260,8 @@ function buildSelect(selectEl, options, value) {
 }
 
 function getTopics() {
-  return ["All topics", ...new Set(allCases.map(c => c.topic))];
+  const topics = [...new Set(allCases.map(c => c.topic))];
+  return ["All topics", ...topics.sort()];
 }
 
 function getCasePool() {
