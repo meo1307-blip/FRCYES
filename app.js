@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.3";
+const APP_VERSION = "v1.4";
 
 const STORAGE_KEY = "frcyes_viva_stats_v1";
 const allCases = window.FRCYES_CASES || [];
@@ -13,7 +13,7 @@ const GLOBAL_ALIASES = {
   "slipped capital femoral epiphysis": ["sufe","scfe"],
   "neck of femur fracture": ["nof fracture","hip fracture"],
   "avascular necrosis": ["avn"],
-  "anterior shoulder dislocation": ["shoulder dislocation"],
+  "anterior shoulder dislocation": ["shoulder dislocation"]
 };
 
 const SHORTCUTS = {
@@ -105,12 +105,12 @@ function generateSmartFeedback(input, correctDx) {
 }
 
 /* ===========================
-   UI ELEMENTS (RESTORED)
+   UI ELEMENTS
    =========================== */
 
 const els = {
+  modeSelect: document.getElementById("modeSelect"),
   topicSelect: document.getElementById("topicSelect"),
-  diagnosisSelect: document.getElementById("diagnosisSelect"),
   differentialInput: document.getElementById("differentialInput"),
   addDifferentialBtn: document.getElementById("addDifferentialBtn"),
   differentialChips: document.getElementById("differentialChips"),
@@ -121,37 +121,52 @@ const els = {
 
 let appState = {
   caseData: null,
-  differentials: []
+  differentials: [],
+  topic: "All topics",
+  mode: "Practice"
 };
 
 /* ===========================
-   DROPDOWN FIX (IMPORTANT)
+   DROPDOWNS (FIXED)
    =========================== */
 
 function populateDropdowns() {
-  const diagnoses = [...new Set(allCases.map(c => c.diagnosis))].sort();
-
-  els.diagnosisSelect.innerHTML = "";
-  diagnoses.forEach(d => {
+  // MODE
+  els.modeSelect.innerHTML = "";
+  ["Practice", "Daily"].forEach(m => {
     const opt = document.createElement("option");
-    opt.value = d;
-    opt.textContent = d;
-    els.diagnosisSelect.appendChild(opt);
+    opt.value = m;
+    opt.textContent = m;
+    els.modeSelect.appendChild(opt);
+  });
+
+  // TOPICS
+  const topics = ["All topics", ...new Set(allCases.map(c => c.topic))];
+
+  els.topicSelect.innerHTML = "";
+  topics.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t;
+    els.topicSelect.appendChild(opt);
   });
 }
 
 /* ===========================
-   VERSION LABEL
+   VERSION LABEL (FIXED)
    =========================== */
 
 function injectVersionLabel() {
   const el = document.createElement("div");
   el.textContent = APP_VERSION;
+
   el.style.position = "fixed";
   el.style.bottom = "6px";
   el.style.right = "10px";
   el.style.fontSize = "11px";
-  el.style.opacity = "0.4";
+  el.style.opacity = "0.5";
+  el.style.zIndex = "9999";
+
   document.body.appendChild(el);
 }
 
@@ -160,7 +175,13 @@ function injectVersionLabel() {
    =========================== */
 
 function chooseCase() {
-  return allCases[Math.floor(Math.random() * allCases.length)];
+  let pool = allCases;
+
+  if (appState.topic !== "All topics") {
+    pool = allCases.filter(c => c.topic === appState.topic);
+  }
+
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function resetCase() {
@@ -224,16 +245,27 @@ function checkDifferentials() {
 }
 
 /* ===========================
-   INIT
+   INIT (FIXED ORDER)
    =========================== */
 
 function init() {
-  populateDropdowns(); // 🔥 restores dropdown text
+  populateDropdowns();   // 🔥 critical fix
   resetCase();
-  injectVersionLabel();
+
+  injectVersionLabel();  // 🔥 now guaranteed to show
 
   els.addDifferentialBtn.onclick = addDifferential;
   els.checkDifferentialsBtn.onclick = checkDifferentials;
+
+  els.topicSelect.onchange = (e) => {
+    appState.topic = e.target.value;
+    resetCase();
+  };
+
+  els.modeSelect.onchange = (e) => {
+    appState.mode = e.target.value;
+    resetCase();
+  };
 }
 
 init();
