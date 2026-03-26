@@ -1,6 +1,57 @@
 const STORAGE_KEY = "frcyes_viva_stats_v1";
 const allCases = window.FRCYES_CASES || [];
 
+/* ===========================
+   GLOBAL ORTHO INTELLIGENCE
+   =========================== */
+
+const GLOBAL_ALIASES = {
+  "periprosthetic joint infection": [
+    "pji", "infected thr", "infected tkr", "prosthetic joint infection",
+    "hip replacement infection", "knee replacement infection"
+  ],
+  "aseptic loosening of total hip replacement": [
+    "aseptic loosening", "thr loosening", "hip replacement loosening"
+  ],
+  "slipped capital femoral epiphysis": [
+    "sufe", "scfe", "slipped upper femoral epiphysis"
+  ],
+  "neck of femur fracture": [
+    "nof fracture", "hip fracture", "intracapsular fracture neck femur"
+  ],
+  "avascular necrosis": [
+    "avn", "osteonecrosis"
+  ],
+  "anterior shoulder dislocation": [
+    "shoulder dislocation", "glenohumeral dislocation", "dislocated shoulder"
+  ],
+  "septic arthritis": [
+    "joint infection", "infected joint"
+  ],
+  "osteosarcoma": [
+    "osteosarc", "bone sarcoma"
+  ]
+};
+
+const SHORTCUTS = {
+  "thr": "total hip replacement",
+  "tkr": "total knee replacement",
+  "nof": "neck of femur",
+  "avn": "avascular necrosis",
+  "pji": "periprosthetic joint infection",
+  "sufe": "slipped capital femoral epiphysis"
+};
+
+function expandShortcuts(text) {
+  let t = normalize(text);
+  for (const [short, full] of Object.entries(SHORTCUTS)) {
+    t = t.replace(new RegExp(`\\b${short}\\b`, "g"), full);
+  }
+  return t;
+}
+
+/* =========================== */
+
 const els = {
   modeSelect: document.getElementById("modeSelect"),
   topicSelect: document.getElementById("topicSelect"),
@@ -68,21 +119,26 @@ function similarityScore(a, b) {
 }
 
 /* ===========================
-   🔥 SMART MATCHING ENGINE
+   🔥 FINAL MATCH ENGINE
    =========================== */
 function matchDifferential(input, ideals) {
-  const norm = normalize(input);
+  const norm = expandShortcuts(input);
 
-  // 1. Exact + alias
+  // 1. GLOBAL alias match
+  for (const [key, aliases] of Object.entries(GLOBAL_ALIASES)) {
+    if (normalize(key) === norm || aliases.some(a => normalize(a) === norm)) {
+      return ideals.find(d => normalize(d.name) === normalize(key)) || null;
+    }
+  }
+
+  // 2. Exact + case aliases
   for (const d of ideals) {
     if (normalize(d.name) === norm) return d;
     if (d.aliases && d.aliases.some(a => normalize(a) === norm)) return d;
   }
 
-  // 2. WORD MATCH (IMPROVED)
+  // 3. WORD MATCH
   const inputWords = norm.split(" ").filter(w => w.length > 2);
-
-  // Prevent nonsense matches
   if (inputWords.length <= 1) return null;
 
   let bestWordMatch = null;
@@ -93,10 +149,7 @@ function matchDifferential(input, ideals) {
 
     for (const name of names) {
       const nameWords = normalize(name).split(" ");
-
       const overlap = inputWords.filter(w => nameWords.includes(w)).length;
-
-      // 🔑 KEY CHANGE HERE
       const score = overlap / inputWords.length;
 
       if (score > bestWordScore) {
@@ -106,16 +159,12 @@ function matchDifferential(input, ideals) {
     }
   }
 
-  if (bestWordScore >= 0.6) {
-    return bestWordMatch;
-  }
+  if (bestWordScore >= 0.6) return bestWordMatch;
 
-  // 3. Fuzzy fallback (typos etc)
+  // 4. Fuzzy
   let best = null, bestScore = 0;
-
   for (const d of ideals) {
     const names = [d.name, ...(d.aliases || [])];
-
     for (const n of names) {
       const score = similarityScore(input, n);
       if (score > bestScore) {
@@ -127,6 +176,8 @@ function matchDifferential(input, ideals) {
 
   return bestScore > 0.72 ? best : null;
 }
+
+/* =========================== */
 
 function loadStats() {
   try {
