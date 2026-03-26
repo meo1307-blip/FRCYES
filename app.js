@@ -38,7 +38,7 @@ let appState = {
 };
 
 function normalize(str) {
-  return str.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+  return (str || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
 }
 
 function levenshtein(a, b) {
@@ -68,7 +68,7 @@ function similarityScore(a, b) {
 }
 
 /* ===========================
-   🔥 FIXED MATCH FUNCTION
+   🔥 SMART MATCHING ENGINE
    =========================== */
 function matchDifferential(input, ideals) {
   const norm = normalize(input);
@@ -79,8 +79,11 @@ function matchDifferential(input, ideals) {
     if (d.aliases && d.aliases.some(a => normalize(a) === norm)) return d;
   }
 
-  // 2. WORD MATCH (NEW)
+  // 2. WORD MATCH (IMPROVED)
   const inputWords = norm.split(" ").filter(w => w.length > 2);
+
+  // Prevent nonsense matches
+  if (inputWords.length <= 1) return null;
 
   let bestWordMatch = null;
   let bestWordScore = 0;
@@ -92,7 +95,9 @@ function matchDifferential(input, ideals) {
       const nameWords = normalize(name).split(" ");
 
       const overlap = inputWords.filter(w => nameWords.includes(w)).length;
-      const score = overlap / nameWords.length;
+
+      // 🔑 KEY CHANGE HERE
+      const score = overlap / inputWords.length;
 
       if (score > bestWordScore) {
         bestWordScore = score;
@@ -105,7 +110,7 @@ function matchDifferential(input, ideals) {
     return bestWordMatch;
   }
 
-  // 3. Fuzzy fallback
+  // 3. Fuzzy fallback (typos etc)
   let best = null, bestScore = 0;
 
   for (const d of ideals) {
@@ -135,14 +140,6 @@ function saveStats() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.stats));
 }
 
-function titleCase(str) {
-  return str.replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function normalize(text) {
-  return (text || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ");
-}
-
 function buildSelect(selectEl, options, value) {
   selectEl.innerHTML = "";
   options.forEach(option => {
@@ -163,16 +160,9 @@ function getCasePool() {
   return allCases.filter(c => c.topic === appState.topic);
 }
 
-function getDailyCase(pool) {
-  const today = new Date();
-  const seed = Number(`${today.getUTCFullYear()}${today.getUTCMonth()+1}${today.getUTCDate()}`);
-  return pool[seed % pool.length];
-}
-
 function chooseCase() {
   const pool = getCasePool();
   if (!pool.length) return allCases[0];
-  if (appState.mode === "Daily") return getDailyCase(pool);
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -187,11 +177,6 @@ function resetCase() {
   render();
 }
 
-function renderStats() {
-  els.casesDone.textContent = appState.stats.casesDone;
-  els.correctDx.textContent = appState.stats.correctDx;
-}
-
 function renderDifferentialChips() {
   els.differentialChips.innerHTML = "";
   appState.differentials.forEach((diff, idx) => {
@@ -199,85 +184,20 @@ function renderDifferentialChips() {
     chip.className = "chip";
     chip.innerHTML = `<span>${diff}</span>`;
     const x = document.createElement("button");
-    x.type = "button";
     x.textContent = "×";
-    x.addEventListener("click", () => {
+    x.onclick = () => {
       appState.differentials.splice(idx, 1);
       renderDifferentialChips();
-    });
+    };
     chip.appendChild(x);
     els.differentialChips.appendChild(chip);
   });
 }
 
-function renderManagement() {
-  const m = appState.caseData.management;
-  els.managementBox.innerHTML = [
-    cardHtml("Immediate", m.immediate),
-    cardHtml("Definitive", m.definitive),
-    cardHtml("Complications", m.complications)
-  ].join("");
-}
-
-function cardHtml(title, items) {
-  return `<div class="teach-card"><h4>${title}</h4><ul>${items.map(i => `<li>${i}</li>`).join("")}</ul></div>`;
-}
-
-function renderCompare() {
-  if (!appState.diagnosisSubmitted) {
-    els.compareBox.className = "compare-box muted";
-    els.compareBox.textContent = "Submit the diagnosis to see the comparison table.";
-    return;
-  }
-  const compare = appState.caseData.compare;
-  const html = `
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>Feature</th>
-          <th>${appState.caseData.diagnosis}</th>
-          <th>${compare.against}</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${compare.rows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join("")}
-      </tbody>
-    </table>
-  `;
-  els.compareBox.className = "compare-box";
-  els.compareBox.innerHTML = html;
-}
-
-function renderTakeaways() {
-  if (!appState.diagnosisSubmitted) {
-    els.takeawaysBox.className = "stacked-boxes muted";
-    els.takeawaysBox.textContent = "Complete the case to reveal the teaching points.";
-    return;
-  }
-  els.takeawaysBox.className = "stacked-boxes";
-  els.takeawaysBox.innerHTML = cardHtml("Key takeaways", appState.caseData.takeaways);
-}
-
-function renderDiagnosisOptions() {
-  const dxs = [...new Set(allCases.map(c => c.diagnosis))].sort();
-  buildSelect(els.diagnosisSelect, ["Select diagnosis", ...dxs], "Select diagnosis");
-}
-
 function render() {
-  const currentCase = appState.caseData;
-  const totalStages = currentCase.stages.length;
-  els.stageTitle.textContent = currentCase.stageTitles[appState.stageIndex];
-  els.caseTopicPill.textContent = currentCase.topic;
-  els.promptBox.textContent = currentCase.stages.slice(0, appState.stageIndex + 1).join("\n\n");
-  els.stageCounter.textContent = `Stage ${appState.stageIndex + 1} of ${totalStages}`;
-  els.stageProgressBar.style.width = `${((appState.stageIndex + 1) / totalStages) * 100}%`;
-  els.prevStageBtn.disabled = appState.stageIndex === 0;
-  els.nextStageBtn.disabled = appState.stageIndex === totalStages - 1;
+  const c = appState.caseData;
+  els.promptBox.textContent = c.stages.slice(0, appState.stageIndex + 1).join("\n\n");
   renderDifferentialChips();
-  renderManagement();
-  renderCompare();
-  renderTakeaways();
-  renderStats();
 }
 
 function addDifferential() {
@@ -285,6 +205,7 @@ function addDifferential() {
   if (!value) return;
   if (appState.differentials.length >= 3) return;
   if (appState.differentials.some(d => normalize(d) === normalize(value))) return;
+
   appState.differentials.push(value);
   els.differentialInput.value = "";
   renderDifferentialChips();
@@ -292,11 +213,9 @@ function addDifferential() {
 
 function checkDifferentials() {
   const ideals = appState.caseData.idealDifferentials;
-  if (!appState.differentials.length) return;
 
   const blocks = appState.differentials.map(diff => {
     const matched = matchDifferential(diff, ideals);
-
     const displayName = matched ? matched.name : diff;
 
     if (matched?.weight === "strong") {
@@ -305,66 +224,19 @@ function checkDifferentials() {
     if (matched?.weight === "partial") {
       return `<div class="feedback-item feedback-warn"><strong>${displayName}</strong><br>${matched.why}</div>`;
     }
-    return `<div class="feedback-item feedback-bad"><strong>${displayName}</strong><br>Less likely here. Re-focus on the discriminator clues in the presentation and imaging.</div>`;
+    return `<div class="feedback-item feedback-bad"><strong>${displayName}</strong><br>Less likely here.</div>`;
   });
 
   els.differentialFeedback.classList.remove("hidden");
   els.differentialFeedback.innerHTML = `<strong>Feedback</strong>${blocks.join("")}`;
 }
 
-function submitDiagnosis() {
-  const chosen = els.diagnosisSelect.value;
-  if (chosen === "Select diagnosis") return;
-  const correct = normalize(chosen) === normalize(appState.caseData.diagnosis);
-  appState.diagnosisSubmitted = true;
-  appState.stats.casesDone += 1;
-  if (correct) appState.stats.correctDx += 1;
-  saveStats();
-  els.diagnosisFeedback.classList.remove("hidden");
-  els.diagnosisFeedback.innerHTML = correct
-    ? `<div class="feedback-item feedback-good"><strong>Correct.</strong><br>${appState.caseData.diagnosis} is the best diagnosis. Use the management and compare sections to rehearse a full viva answer.</div>`
-    : `<div class="feedback-item feedback-bad"><strong>Not quite.</strong><br>The best diagnosis is <strong>${appState.caseData.diagnosis}</strong>. Review the compare table and takeaways below.</div>`;
-  renderCompare();
-  renderTakeaways();
-  renderStats();
-}
-
 function init() {
-  buildSelect(els.modeSelect, ["Practice", "Daily"], appState.mode);
   buildSelect(els.topicSelect, getTopics(), appState.topic);
-  renderDiagnosisOptions();
   resetCase();
 
-  els.modeSelect.addEventListener("change", e => {
-    appState.mode = e.target.value;
-    resetCase();
-  });
-  els.topicSelect.addEventListener("change", e => {
-    appState.topic = e.target.value;
-    resetCase();
-  });
-  els.newCaseBtn.addEventListener("click", resetCase);
-  els.prevStageBtn.addEventListener("click", () => {
-    if (appState.stageIndex > 0) {
-      appState.stageIndex -= 1;
-      render();
-    }
-  });
-  els.nextStageBtn.addEventListener("click", () => {
-    if (appState.stageIndex < appState.caseData.stages.length - 1) {
-      appState.stageIndex += 1;
-      render();
-    }
-  });
-  els.addDifferentialBtn.addEventListener("click", addDifferential);
-  els.differentialInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addDifferential();
-    }
-  });
-  els.checkDifferentialsBtn.addEventListener("click", checkDifferentials);
-  els.submitDiagnosisBtn.addEventListener("click", submitDiagnosis);
+  els.addDifferentialBtn.onclick = addDifferential;
+  els.checkDifferentialsBtn.onclick = checkDifferentials;
 }
 
 init();
