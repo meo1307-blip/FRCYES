@@ -67,19 +67,50 @@ function similarityScore(a, b) {
   return 1 - dist / Math.max(a.length, b.length);
 }
 
+/* ===========================
+   🔥 FIXED MATCH FUNCTION
+   =========================== */
 function matchDifferential(input, ideals) {
   const norm = normalize(input);
 
-  // Exact + alias match
+  // 1. Exact + alias
   for (const d of ideals) {
     if (normalize(d.name) === norm) return d;
     if (d.aliases && d.aliases.some(a => normalize(a) === norm)) return d;
   }
 
-  // Fuzzy
-  let best = null, bestScore = 0;
+  // 2. WORD MATCH (NEW)
+  const inputWords = norm.split(" ").filter(w => w.length > 2);
+
+  let bestWordMatch = null;
+  let bestWordScore = 0;
+
   for (const d of ideals) {
     const names = [d.name, ...(d.aliases || [])];
+
+    for (const name of names) {
+      const nameWords = normalize(name).split(" ");
+
+      const overlap = inputWords.filter(w => nameWords.includes(w)).length;
+      const score = overlap / nameWords.length;
+
+      if (score > bestWordScore) {
+        bestWordScore = score;
+        bestWordMatch = d;
+      }
+    }
+  }
+
+  if (bestWordScore >= 0.6) {
+    return bestWordMatch;
+  }
+
+  // 3. Fuzzy fallback
+  let best = null, bestScore = 0;
+
+  for (const d of ideals) {
+    const names = [d.name, ...(d.aliases || [])];
+
     for (const n of names) {
       const score = similarityScore(input, n);
       if (score > bestScore) {
@@ -262,16 +293,21 @@ function addDifferential() {
 function checkDifferentials() {
   const ideals = appState.caseData.idealDifferentials;
   if (!appState.differentials.length) return;
+
   const blocks = appState.differentials.map(diff => {
     const matched = matchDifferential(diff, ideals);
+
+    const displayName = matched ? matched.name : diff;
+
     if (matched?.weight === "strong") {
-      return `<div class="feedback-item feedback-good"><strong>${diff}</strong><br>${matched.why}</div>`;
+      return `<div class="feedback-item feedback-good"><strong>${displayName}</strong><br>${matched.why}</div>`;
     }
     if (matched?.weight === "partial") {
-      return `<div class="feedback-item feedback-warn"><strong>${diff}</strong><br>${matched.why}</div>`;
+      return `<div class="feedback-item feedback-warn"><strong>${displayName}</strong><br>${matched.why}</div>`;
     }
-    return `<div class="feedback-item feedback-bad"><strong>${diff}</strong><br>Less likely here. Re-focus on the discriminator clues in the presentation and imaging.</div>`;
+    return `<div class="feedback-item feedback-bad"><strong>${displayName}</strong><br>Less likely here. Re-focus on the discriminator clues in the presentation and imaging.</div>`;
   });
+
   els.differentialFeedback.classList.remove("hidden");
   els.differentialFeedback.innerHTML = `<strong>Feedback</strong>${blocks.join("")}`;
 }
