@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.2"; // 🔹 CHANGE THIS EACH UPDATE
+const APP_VERSION = "v1.3";
 
 const STORAGE_KEY = "frcyes_viva_stats_v1";
 const allCases = window.FRCYES_CASES || [];
@@ -8,31 +8,12 @@ const allCases = window.FRCYES_CASES || [];
    =========================== */
 
 const GLOBAL_ALIASES = {
-  "periprosthetic joint infection": [
-    "pji", "infected thr", "infected tkr", "prosthetic joint infection",
-    "hip replacement infection", "knee replacement infection"
-  ],
-  "aseptic loosening of total hip replacement": [
-    "aseptic loosening", "thr loosening", "hip replacement loosening"
-  ],
-  "slipped capital femoral epiphysis": [
-    "sufe", "scfe", "slipped upper femoral epiphysis"
-  ],
-  "neck of femur fracture": [
-    "nof fracture", "hip fracture", "intracapsular fracture neck femur"
-  ],
-  "avascular necrosis": [
-    "avn", "osteonecrosis"
-  ],
-  "anterior shoulder dislocation": [
-    "shoulder dislocation", "glenohumeral dislocation", "dislocated shoulder"
-  ],
-  "septic arthritis": [
-    "joint infection", "infected joint"
-  ],
-  "osteosarcoma": [
-    "osteosarc", "bone sarcoma"
-  ]
+  "periprosthetic joint infection": ["pji","infected thr","infected tkr"],
+  "aseptic loosening of total hip replacement": ["aseptic loosening","thr loosening"],
+  "slipped capital femoral epiphysis": ["sufe","scfe"],
+  "neck of femur fracture": ["nof fracture","hip fracture"],
+  "avascular necrosis": ["avn"],
+  "anterior shoulder dislocation": ["shoulder dislocation"],
 };
 
 const SHORTCUTS = {
@@ -44,6 +25,10 @@ const SHORTCUTS = {
   "sufe": "slipped capital femoral epiphysis"
 };
 
+function normalize(str) {
+  return (str || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+}
+
 function expandShortcuts(text) {
   let t = normalize(text);
   for (const [short, full] of Object.entries(SHORTCUTS)) {
@@ -52,29 +37,10 @@ function expandShortcuts(text) {
   return t;
 }
 
-/* =========================== */
-
-const els = {
-  differentialInput: document.getElementById("differentialInput"),
-  addDifferentialBtn: document.getElementById("addDifferentialBtn"),
-  differentialChips: document.getElementById("differentialChips"),
-  checkDifferentialsBtn: document.getElementById("checkDifferentialsBtn"),
-  differentialFeedback: document.getElementById("differentialFeedback"),
-  promptBox: document.getElementById("promptBox")
-};
-
-let appState = {
-  caseData: null,
-  differentials: []
-};
-
-function normalize(str) {
-  return (str || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
-}
-
 /* ===========================
-   🔥 MATCH ENGINE
+   MATCH ENGINE
    =========================== */
+
 function matchDifferential(input, ideals) {
   const norm = expandShortcuts(input);
 
@@ -110,8 +76,9 @@ function matchDifferential(input, ideals) {
 }
 
 /* ===========================
-   🔥 SMART FEEDBACK
+   SMART FEEDBACK
    =========================== */
+
 function generateSmartFeedback(input, correctDx) {
   const words = normalize(input).split(" ");
   const correctWords = normalize(correctDx).split(" ");
@@ -119,41 +86,78 @@ function generateSmartFeedback(input, correctDx) {
   const overlap = words.filter(w => correctWords.includes(w));
 
   if (overlap.length > 0) {
-    return `You're on the right track mentioning <strong>${overlap.join(", ")}</strong>, but you're missing the key discriminator that makes this diagnosis most likely.`;
+    return `You're on the right track (${overlap.join(", ")}), but missing the key discriminator.`;
   }
 
-  if (words.includes("infection") || words.includes("septic")) {
-    return `Infection is a reasonable thought, but check for systemic features, inflammatory markers, and aspirate findings.`;
+  if (words.includes("infection")) {
+    return `Consider infection markers, aspirate, systemic features.`;
   }
 
   if (words.includes("fracture")) {
-    return `Fracture is less likely here — consider chronic or mechanical pathology instead.`;
+    return `Fracture less likely — think chronic/mechanical pathology.`;
   }
 
   if (words.includes("loosening")) {
-    return `Loosening is relevant — now differentiate between septic and aseptic causes.`;
+    return `Differentiate septic vs aseptic loosening.`;
   }
 
-  return `Less likely. Focus on key clinical and imaging discriminators.`;
+  return `Focus on key clinical and imaging discriminators.`;
 }
 
-/* =========================== */
+/* ===========================
+   UI ELEMENTS (RESTORED)
+   =========================== */
+
+const els = {
+  topicSelect: document.getElementById("topicSelect"),
+  diagnosisSelect: document.getElementById("diagnosisSelect"),
+  differentialInput: document.getElementById("differentialInput"),
+  addDifferentialBtn: document.getElementById("addDifferentialBtn"),
+  differentialChips: document.getElementById("differentialChips"),
+  checkDifferentialsBtn: document.getElementById("checkDifferentialsBtn"),
+  differentialFeedback: document.getElementById("differentialFeedback"),
+  promptBox: document.getElementById("promptBox")
+};
+
+let appState = {
+  caseData: null,
+  differentials: []
+};
+
+/* ===========================
+   DROPDOWN FIX (IMPORTANT)
+   =========================== */
+
+function populateDropdowns() {
+  const diagnoses = [...new Set(allCases.map(c => c.diagnosis))].sort();
+
+  els.diagnosisSelect.innerHTML = "";
+  diagnoses.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = d;
+    els.diagnosisSelect.appendChild(opt);
+  });
+}
+
+/* ===========================
+   VERSION LABEL
+   =========================== */
 
 function injectVersionLabel() {
   const el = document.createElement("div");
   el.textContent = APP_VERSION;
-
   el.style.position = "fixed";
   el.style.bottom = "6px";
   el.style.right = "10px";
   el.style.fontSize = "11px";
   el.style.opacity = "0.4";
-  el.style.pointerEvents = "none";
-
   document.body.appendChild(el);
 }
 
-/* =========================== */
+/* ===========================
+   CORE
+   =========================== */
 
 function chooseCase() {
   return allCases[Math.floor(Math.random() * allCases.length)];
@@ -172,14 +176,21 @@ function render() {
 
 function renderDifferentialChips() {
   els.differentialChips.innerHTML = "";
+
   appState.differentials.forEach((d, i) => {
     const chip = document.createElement("div");
     chip.className = "chip";
+
     chip.innerHTML = `<span>${d}</span>`;
-    chip.onclick = () => {
+
+    const btn = document.createElement("button");
+    btn.textContent = "×";
+    btn.onclick = () => {
       appState.differentials.splice(i, 1);
       renderDifferentialChips();
     };
+
+    chip.appendChild(btn);
     els.differentialChips.appendChild(chip);
   });
 }
@@ -187,6 +198,7 @@ function renderDifferentialChips() {
 function addDifferential() {
   const val = els.differentialInput.value.trim();
   if (!val) return;
+
   appState.differentials.push(val);
   els.differentialInput.value = "";
   renderDifferentialChips();
@@ -211,10 +223,14 @@ function checkDifferentials() {
   els.differentialFeedback.innerHTML = feedback.join("");
 }
 
-function init() {
-  resetCase();
+/* ===========================
+   INIT
+   =========================== */
 
-  injectVersionLabel(); // 🔹 VERSION LABEL ADDED
+function init() {
+  populateDropdowns(); // 🔥 restores dropdown text
+  resetCase();
+  injectVersionLabel();
 
   els.addDifferentialBtn.onclick = addDifferential;
   els.checkDifferentialsBtn.onclick = checkDifferentials;
